@@ -33,4 +33,10 @@ class ItemPredicateObject(tasks.SubjectTask):
 
 		self.subject.emit(rdf.Class, mime_type_to_class.get(mime_type, media.Recording))
 
-module = [ ItemPredicateObject ]
+class ChangeVideoToMovie(tasks.SubjectTask):
+	trigger = triggers.SubjectEmit(rdf.Class, video.Recording)
+
+	def run(self):
+		self.subject.emit(rdf.Class, video.Movie)
+
+module = [ ItemPredicateObject, ChangeVideoToMovie ]
