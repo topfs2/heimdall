@@ -1,0 +1,43 @@
+import tasks
+import types
+import triggers
+
+class Subject(object):
+	def __init__(self, uri, subjectTasks, taskQueue):
+		self.uri = uri
+		self.subject = dict()
+
+		self.availableTasks = [t for t in subjectTasks]
+		self.taskQueue = taskQueue
+
+		# Trigger subject creation tasks
+		self._trigger(triggers.SubjectCreation)
+
+	def _trigger(self, classInfo):
+		# Filter tasks of interest
+		tasks = [t for t in self.availableTasks if isinstance(t.trigger, classInfo) and t.trigger.match(self)]
+
+		for t in tasks:
+			self.taskQueue.addTask(t(self), self.uri)
+			self.availableTasks.remove(t) # Once a task has been triggered it will be removed from available tasks
+
+	def __getitem__(self, name):
+		return self.subject.get(name, None)
+
+	def emit(self, predicate, object):
+		if object != None:
+			if predicate in self.subject and type(self.subject[predicate]) == types.ListType:
+				self.subject[predicate].append(object)
+			elif predicate in self.subject:
+				self.subject[predicate] = [ self.subject[predicate], object ]
+			else:
+				self.subject[predicate] = object
+
+			# Trigger subject emit tasks
+			self._trigger(triggers.SubjectEmit)
+
+	def replace(self, predicate, object, objectToReplace = None):
+		raise NotImplementedError("Not finished")
+
+	def dump(self):
+		return self.subject
