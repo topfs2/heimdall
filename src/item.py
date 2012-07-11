@@ -7,6 +7,7 @@ from heimdall.predicates import *
 import json
 from urllib import unquote_plus, quote_plus
 from urlparse import urlsplit
+import os
 
 mime_types = {
 	".mkv": "video/x-matroska",
@@ -25,7 +26,7 @@ class ItemPredicateObject(tasks.SubjectTask):
 		ext = path[path.rindex("."):].lower()
 		mime_type = mime_types.get(ext, None)
 
-		title = path[path.rindex("/") + 1:path.rindex(".")]
+		title = os.path.basename(path)[ : path.rindex(".") - len(path)]
 		title = title.replace(".", " ")
 
 		self.subject.emit(dc.title, title)
