@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import heimdall.engine
+from heimdall.core import Engine
 from heimdall.predicates import *
 import tmdb
 import item
@@ -11,7 +11,7 @@ import debug
 import time
 
 def main():
-	engine = heimdall.engine.Engine()
+	engine = Engine()
 	try:
 		engine.registerModule(tmdb.module)
 		engine.registerModule(item.module)
