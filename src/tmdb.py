@@ -48,9 +48,10 @@ class SearchMovieCollector(tasks.SubjectTask):
 	def run(self, resource):
 		result = json.loads(resource)
 
-		ID = result["results"][0]["id"]
-		tm = "http://api.themoviedb.org/3/movie/" + str(ID)
+		if "results" in result and len(result["results"]) > 0 and "id" in result["results"][0]:
+			ID = result["results"][0]["id"]
+			tm = "http://api.themoviedb.org/3/movie/" + str(ID)
 
-		self.subject.emit(owl.sameAs, tm)
+			self.subject.emit(owl.sameAs, tm)
 
 module = [ SearchMovieCollector, MoviePredicateObject ]
