@@ -1,9 +1,14 @@
 import tasks
-import types
 import triggers
+
+import types
+import threading
 
 class Subject(object):
 	def __init__(self, uri, subjectTasks, taskQueue):
+		self.condition = threading.Condition()
+		self.condition.acquire()
+
 		self.uri = uri
 		self.subject = dict()
 
@@ -12,6 +17,7 @@ class Subject(object):
 
 		# Trigger subject creation tasks
 		self._trigger(triggers.SubjectCreation)
+		self.condition.release()
 
 	def _trigger(self, classInfo):
 		# Filter tasks of interest
@@ -25,6 +31,7 @@ class Subject(object):
 		return self.subject.get(name, None)
 
 	def emit(self, predicate, object):
+		self.condition.acquire()
 		if object != None:
 			if predicate in self.subject and type(self.subject[predicate]) == types.ListType:
 				self.subject[predicate].append(object)
@@ -35,6 +42,7 @@ class Subject(object):
 
 			# Trigger subject emit tasks
 			self._trigger(triggers.SubjectEmit)
+		self.condition.release()
 
 	def replace(self, predicate, object, objectToReplace = None):
 		raise NotImplementedError("Not finished")
