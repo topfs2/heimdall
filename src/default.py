@@ -2,6 +2,8 @@
 
 from heimdall.core import Engine
 from heimdall.predicates import *
+from heimdall.utils import MainloopThreadPool
+
 import tmdb
 import item
 import json
@@ -11,32 +13,19 @@ import debug
 import time
 
 def main():
-	engine = Engine()
-	try:
-		engine.registerModule(tmdb.module)
-		engine.registerModule(item.module)
-		engine.registerModule(debug.module)
+	pool = MainloopThreadPool()
+	engine = Engine(pool)
+	engine.registerModule(tmdb.module)
+	engine.registerModule(item.module)
 
-		subjects = dict()
+	subjects = dict()
 
-		uri = "file:///home/SomeUser/movies/Horrible Bosses.mkv" # A file which doesn't exist, just used for testing
-		s = engine.get(uri)
+	uri = "file:///home/SomeUser/movies/Horrible Bosses.mkv" # A file which doesn't exist, just used for testing
+	s = engine.get(uri)
 
-		engine.wait()
+	pool.join()
 
-		print json.dumps(s.dump(), sort_keys=True, indent=4)
-
-		try:
-			next = engine.get(s[owl.sameAs])
-
-			engine.wait()
-			print json.dumps(next.dump(), sort_keys=True, indent=4)
-		except:
-			pass
-	except Exception as e:
-		print "Exception", e
-	finally:
-		engine.shutdown()
+	print json.dumps(s.dump(), sort_keys=True, indent=4)
 
 if __name__ == "__main__":
     main()

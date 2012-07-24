@@ -1,7 +1,9 @@
 import tasks
 from taskqueue import TaskQueue
 import triggers
+import utils
 
+import json
 import types
 import threading
 
@@ -25,7 +27,7 @@ class Subject(object):
 		tasks = [t for t in self.availableTasks if isinstance(t.trigger, classInfo) and t.trigger.match(self)]
 
 		for t in tasks:
-			self.taskQueue.addTask(t(self), self.uri)
+			self.taskQueue.addTask(t(self), self)
 			self.availableTasks.remove(t) # Once a task has been triggered it will be removed from available tasks
 
 	def __getitem__(self, name):
@@ -51,20 +53,19 @@ class Subject(object):
 	def dump(self):
 		return self.subject
 
+	def onDone(self, task, error, result):
+		self.condition.acquire()
+
+		self.condition.release()
+
 class Engine(object):
-	def __init__(self):
+	def __init__(self, threadPool):
 		self.registeredTasks = list()
-		self.taskQueue = TaskQueue(10)
+		self.threadPool = threadPool
 
 	def registerModule(self, module):
 		self.registeredTasks.extend([t for t in module if issubclass(t, tasks.SubjectTask)])
 
 	def get(self, uri):
-		subject = Subject(uri, self.registeredTasks, self.taskQueue)
+		subject = Subject(uri, self.registeredTasks, utils.SubjectTaskQueue(self.threadPool))
 		return subject
-
-	def wait(self, uri = None):
-		self.taskQueue.wait(uri)
-
-	def shutdown(self):
-		self.taskQueue.shutdown()
