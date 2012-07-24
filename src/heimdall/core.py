@@ -6,6 +6,15 @@ import utils
 import json
 import types
 import threading
+from collections import defaultdict
+
+def isolate_if_single(d):
+	if d == None or len(d) == 0:
+		return None
+	elif len(d) == 1:
+		return d[0]
+	else:
+		return d
 
 class Subject(object):
 	def __init__(self, uri, subjectTasks, taskQueue):
@@ -13,7 +22,7 @@ class Subject(object):
 		self.condition.acquire()
 
 		self.uri = uri
-		self.subject = dict()
+		self.subject = defaultdict(list)
 
 		self.availableTasks = [t for t in subjectTasks]
 		self.taskQueue = taskQueue
@@ -31,17 +40,13 @@ class Subject(object):
 			self.availableTasks.remove(t) # Once a task has been triggered it will be removed from available tasks
 
 	def __getitem__(self, name):
-		return self.subject.get(name, None)
+		# No lock since pythons dict should be thread safe
+		return isolate_if_single(self.subject.get(name, None))
 
 	def emit(self, predicate, object):
 		self.condition.acquire()
 		if object != None:
-			if predicate in self.subject and type(self.subject[predicate]) == types.ListType:
-				self.subject[predicate].append(object)
-			elif predicate in self.subject:
-				self.subject[predicate] = [ self.subject[predicate], object ]
-			else:
-				self.subject[predicate] = object
+			self.subject[predicate].append(object)
 
 			# Trigger subject emit tasks
 			self._trigger(triggers.SubjectEmit)
@@ -51,7 +56,13 @@ class Subject(object):
 		raise NotImplementedError("Not finished")
 
 	def dump(self):
-		return self.subject
+		s = dict()
+		for key, value in self.subject.items():
+			value = isolate_if_single(value)
+			if value:
+				s[key] = value
+
+		return s
 
 	def onDone(self, task, error, result):
 		self.condition.acquire()
