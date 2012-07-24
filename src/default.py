@@ -21,11 +21,14 @@ def main():
 	subjects = dict()
 
 	uri = "file:///home/SomeUser/movies/Horrible Bosses.mkv" # A file which doesn't exist, just used for testing
-	s = engine.get(uri)
+	def c(s):
+		print s
+
+	s = engine.get(uri, c)
 
 	pool.join()
 
-	print json.dumps(s.dump(), sort_keys=True, indent=4)
+#	print json.dumps(s.dump(), sort_keys=True, indent=4)
 
 if __name__ == "__main__":
     main()

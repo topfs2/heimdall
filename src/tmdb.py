@@ -1,7 +1,7 @@
 import heimdall
 from heimdall import tasks
 from heimdall import resources
-from heimdall import triggers
+from heimdall import supplies, demands
 from heimdall.predicates import *
 
 import json
@@ -10,7 +10,19 @@ from urllib import unquote_plus, quote_plus
 tmdb_base = "http://api.themoviedb.org/3"
 
 class MoviePredicateObject(tasks.SubjectTask):
-	trigger = triggers.SubjectCreation("http://api.themoviedb.org/3/movie/")
+	demand = [
+		#demands.subject("http://themoviedb.org/movie/")
+		demands.subject("http://api.themoviedb.org/3/movie/")
+	]
+
+	supply = [
+		supplies.emit(dc.title),
+		supplies.emit(dc.description),
+		supplies.emit(owl.sameAs),
+		supplies.emit(foaf.homepage),
+		supplies.emit(foaf.thumbnail),
+		supplies.emit("fanart")
+	]
 
 	def require(self):
 		return [ 
@@ -37,7 +49,16 @@ class MoviePredicateObject(tasks.SubjectTask):
 			self.subject.emit("fanart", image_base + size + movie["poster_path"])
 
 class SearchMovieCollector(tasks.SubjectTask):
-	trigger = triggers.SubjectEmit(rdf.Class, video.Movie)
+	demand = [
+		demands.required(dc.title),
+		#demands.optional(dc.date),
+		demands.requiredClass("item.media.video.Movie", True),
+		demands.none(owl.sameAs, "http://themoviedb.org/movie/[0-9]*")
+	]
+
+	supply = [
+		supplies.emit(owl.sameAs, "http://themoviedb.org/movie/")
+	]
 
 	def require(self):
 		title = self.subject[dc.title]

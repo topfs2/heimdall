@@ -1,7 +1,7 @@
 import heimdall
 from heimdall import tasks
 from heimdall import resources
-from heimdall import triggers
+from heimdall import supplies, demands
 from heimdall.predicates import *
 
 import json
@@ -15,11 +15,20 @@ mime_types = {
 }
 
 mime_type_to_class = {
-	"video/x-matroska": video.Recording
+	"video/x-matroska": "item.media.video"
 }
 
 class ItemPredicateObject(tasks.SubjectTask):
-	trigger = triggers.SubjectCreation("file://")
+	demand = [
+		demands.subject("^file://")
+	]
+
+	supply = [
+		supplies.emit(rdf.Class, "item"),
+		supplies.emit(rdf.Class, "item.media"),
+		supplies.emit(dc.title),
+		supplies.emit(dc.format)
+	]
 
 	def run(self):
 		path = urlsplit(self.subject.uri).path
@@ -32,12 +41,18 @@ class ItemPredicateObject(tasks.SubjectTask):
 		self.subject.emit(dc.title, title)
 		self.subject.emit(dc.format, mime_type)
 
-		self.subject.emit(rdf.Class, mime_type_to_class.get(mime_type, media.Recording))
+		self.subject.Class = mime_type_to_class.get(mime_type, "item.media")
 
 class ChangeVideoToMovie(tasks.SubjectTask):
-	trigger = triggers.SubjectEmit(rdf.Class, video.Recording)
+	demand = [
+		demands.requiredClass("item.media.video")
+	]
+
+	supply = [
+		supplies.replace(rdf.Class, "item.media.video.Movie"),
+	]
 
 	def run(self):
-		self.subject.emit(rdf.Class, video.Movie)
+		self.subject.Class = "item.media.video.Movie"
 
 module = [ ItemPredicateObject, ChangeVideoToMovie ]

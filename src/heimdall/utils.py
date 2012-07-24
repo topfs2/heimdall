@@ -112,3 +112,9 @@ class SubjectTaskQueue(object):
 		safe_callback(self.runningTasks[task], task, error, result)
 		del self.runningTasks[task]
 		self.condition.release()
+
+class Enum(set):
+    def __getattr__(self, name):
+        if name in self:
+            return name
+        raise AttributeError

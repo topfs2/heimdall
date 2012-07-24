@@ -19,5 +19,8 @@ class Task(object):
 class SubjectTask(Task):
 	trigger = None
 
+	demand = None
+	supply = None
+
 	def __init__(self, subject):
 		self.subject = subject
