@@ -47,3 +47,48 @@ class MainloopThreadPool(object):
 				error = e
 			finally:
 				safe_callback(wi.callback, wi.runnable, error, result)
+
+class ThreadedWorker(threading .Thread):
+	def __init__(self, owner):
+		super(ThreadedWorker, self).__init__()
+		self.owner = owner
+		self.start()
+
+	def run(self):
+		wi = self.owner.getNextWorkItem()
+
+		while wi:
+			error = None
+			result = None
+			try:
+				result = safe_run(wi.runnable, wi.args, wi.kwargs)
+			except Exception as e:
+				error = e
+			finally:
+				safe_callback(wi.callback, wi.runnable, error, result)
+
+			wi = self.owner.getNextWorkItem()
+
+class ThreadedThreadPool(object):
+	def __init__(self, numberWorkers):
+		self.condition = threading.Condition()
+		self.queue = deque()
+		self.numberWorkers = numberWorkers
+		self.workers = list()
+
+	def append(self, runnable, callback, *args, **kwargs):
+		self.condition.acquire()
+		self.queue.append(WorkItem(runnable, callback, args, kwargs))
+		if len(self.workers) < self.numberWorkers:
+			self.workers.append(ThreadedWorker(self))
+		self.condition.notifyAll()
+		self.condition.release()
+
+	def getNextWorkItem(self):
+		self.condition.acquire()
+		wi = None
+		if len(self.queue) > 0:
+			wi = self.queue.popleft()
+		self.condition.notifyAll()
+		self.condition.release()
+		return wi
