@@ -2,7 +2,7 @@
 
 from heimdall.core import Engine
 from heimdall.predicates import *
-from heimdall.utils import MainloopThreadPool
+from heimdall.threadpools import MainloopThreadPool
 
 import tmdb
 import item
