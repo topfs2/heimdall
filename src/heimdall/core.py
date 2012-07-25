@@ -1,6 +1,6 @@
 import tasks
 import triggers
-import utils
+import taskqueues
 import demands, supplies
 
 import json
@@ -147,5 +147,5 @@ class Engine(object):
 		self.registeredTasks.extend([t for t in module if issubclass(t, tasks.SubjectTask)])
 
 	def get(self, uri, callback):
-		subject = Subject(uri, self.registeredTasks, utils.SubjectTaskQueue(self.threadPool), callback)
+		subject = Subject(uri, self.registeredTasks, taskqueues.SubjectTaskQueue(self.threadPool), callback)
 		return subject
