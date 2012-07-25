@@ -1,5 +1,12 @@
 import tasks
-import requests
+try:
+	import requests
+	def vfs_read(uri):
+		return request.get(uri).content
+except:
+	import urllib
+	def vfs_read(uri):
+		return urllib.urlopen(uri).read()
 
 class Resource(tasks.Task):
 	def __init__(self, uri):
@@ -9,9 +16,7 @@ class Resource(tasks.Task):
 		return self
 
 	def read(self):
-		response = requests.get(self.uri)
-		return response.content
-
+		return vfs_read(self.uri)
 
 class SimpleResource(tasks.Task):
 	def __init__(self, uri):
