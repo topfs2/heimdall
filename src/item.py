@@ -15,7 +15,8 @@ mime_types = {
 }
 
 mime_type_to_class = {
-	"video/x-matroska": "item.video"
+	"video/x-matroska": "item.video",
+	"video/avi": "item.video"
 }
 
 class ItemPredicateObject(tasks.SubjectTask):
