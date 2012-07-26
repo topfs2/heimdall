@@ -15,7 +15,7 @@ mime_types = {
 }
 
 mime_type_to_class = {
-	"video/x-matroska": "item.media.video"
+	"video/x-matroska": "item.video"
 }
 
 class ItemPredicateObject(tasks.SubjectTask):
@@ -25,7 +25,6 @@ class ItemPredicateObject(tasks.SubjectTask):
 
 	supply = [
 		supplies.emit(rdf.Class, "item"),
-		supplies.emit(rdf.Class, "item.media"),
 		supplies.emit(dc.title),
 		supplies.emit(dc.format)
 	]
@@ -41,18 +40,18 @@ class ItemPredicateObject(tasks.SubjectTask):
 		self.subject.emit(dc.title, title)
 		self.subject.emit(dc.format, mime_type)
 
-		self.subject.Class = mime_type_to_class.get(mime_type, "item.media")
+		self.subject.Class = mime_type_to_class.get(mime_type, "item")
 
 class ChangeVideoToMovie(tasks.SubjectTask):
 	demand = [
-		demands.requiredClass("item.media.video")
+		demands.requiredClass("item.video")
 	]
 
 	supply = [
-		supplies.replace(rdf.Class, "item.media.video.Movie"),
+		supplies.replace(rdf.Class, "item.video.Movie"),
 	]
 
 	def run(self):
-		self.subject.Class = "item.media.video.Movie"
+		self.subject.Class = "item.video.Movie"
 
 module = [ ItemPredicateObject, ChangeVideoToMovie ]

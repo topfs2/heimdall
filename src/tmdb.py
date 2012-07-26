@@ -52,7 +52,7 @@ class SearchMovieCollector(tasks.SubjectTask):
 	demand = [
 		demands.required(dc.title),
 		#demands.optional(dc.date),
-		demands.requiredClass("item.media.video.Movie", True),
+		demands.requiredClass("item.video.Movie", True),
 		demands.none(owl.sameAs, "http://themoviedb.org/movie/[0-9]*")
 	]
 
