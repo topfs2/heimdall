@@ -47,16 +47,4 @@ class ItemPredicateObject(tasks.SubjectTask):
 
 		self.subject.Class = mime_type_to_class.get(mime_type, "item")
 
-class ChangeVideoToMovie(tasks.SubjectTask):
-	demand = [
-		demands.requiredClass("item.video")
-	]
-
-	supply = [
-		supplies.replace(rdf.Class, "item.video.Movie"),
-	]
-
-	def run(self):
-		self.subject.Class = "item.video.Movie"
-
-module = [ ItemPredicateObject, ChangeVideoToMovie ]
+module = [ ItemPredicateObject ]
