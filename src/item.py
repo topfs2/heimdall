@@ -11,12 +11,16 @@ import os
 
 mime_types = {
 	".mkv": "video/x-matroska",
-	".avi": "video/avi"
+	".avi": "video/avi",
+	".mp3": "audio/mpeg",
+	".flac": "audio/flac"
 }
 
 mime_type_to_class = {
 	"video/x-matroska": "item.video",
-	"video/avi": "item.video"
+	"video/avi": "item.video",
+	"audio/mpeg": "item.audio",
+	"audio/flac": "item.audio"
 }
 
 class ItemPredicateObject(tasks.SubjectTask):
