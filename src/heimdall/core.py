@@ -128,6 +128,9 @@ class Subject(object):
 		self.availableTasks = [t for t in possible_tasks if t not in doable_tasks]
 
 	def onDone(self, task, error, result):
+		if error:
+			raise error
+
 		self.condition.acquire()
 
 		if task in self.runningTasks:
