@@ -7,6 +7,7 @@ from heimdall.threadpools import MainloopThreadPool
 import tmdb
 import item
 import video_item
+import audio_item
 import json
 
 import debug
@@ -19,6 +20,7 @@ def main():
 	engine.registerModule(tmdb.module)
 	engine.registerModule(item.module)
 	engine.registerModule(video_item.module)
+	engine.registerModule(audio_item.module)
 
 	subjects = dict()
 

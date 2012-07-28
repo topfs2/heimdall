@@ -13,14 +13,25 @@ class ExtractTags(tasks.SubjectTask):
 
 	supply = [
 		supplies.replace(dc.title),
-		supplies.emit("album"),
-		supplies.emit("artist")
+		supplies.emit(upnp.album),
+		supplies.emit(upnp.artist),
+		supplies.emit(upnp.originalTrackNumber),
 	]
 
 	def run(self):
-		f = mutagen.File(self.subject.uri[7:], easy=True)
-		self.subject.emit("album", f["album"][0])
-		self.subject.emit("artist", f["artist"][0])
-		self.subject.replace(dc.title, f["title"][0])
+		if "file://" == self.subject.uri[7:]:
+			f = mutagen.File(self.subject.uri[7:], easy=True)
+
+			for album in f.get("album", []):
+				self.subject.emit(upnp.album, album)
+
+			for artist in f.get("artist", []):
+				self.subject.emit(upnp.artist, artist)
+
+			title = f.get("title", None)
+			if title and len(title) > 0:
+				self.subject.replace(dc.title, title[0])
+
+			self.subject.Class = "item.audio.musicTrack"
 
 module = [ ExtractTags ]
