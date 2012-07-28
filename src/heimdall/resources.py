@@ -2,7 +2,7 @@ import tasks
 try:
 	import requests
 	def vfs_read(uri):
-		return request.get(uri).content
+		return requests.get(uri).content
 except:
 	import urllib
 	def vfs_read(uri):
