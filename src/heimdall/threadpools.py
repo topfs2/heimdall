@@ -32,21 +32,39 @@ class MainloopThreadPool(object):
 	def __init__(self):
 		self.condition = threading.Condition()
 		self.queue = deque()
+		self.run = True
 
 	def append(self, runnable, callback, *args, **kwargs):
+		self.condition.acquire()
 		self.queue.append(WorkItem(runnable, callback, args, kwargs))
+		self.condition.notifyAll()
+		self.condition.release()
+
+	def quit(self):
+		self.condition.acquire()
+		self.run = False
+		self.condition.notifyAll()
+		self.condition.release()
 
 	def join(self):
-		while len(self.queue) > 0:
-			wi = self.queue.popleft()
-			error = None
-			result = None
-			try:
-				result = safe_run(wi.runnable, wi.args, wi.kwargs)
-			except Exception as e:
-				error = e
-			finally:
-				safe_callback(wi.callback, wi.runnable, error, result)
+		self.condition.acquire()
+		while self.run:
+			if len(self.queue) > 0:
+				wi = self.queue.popleft()
+				error = None
+				result = None
+				try:
+					result = safe_run(wi.runnable, wi.args, wi.kwargs)
+				except Exception as e:
+					error = e
+				finally:
+					safe_callback(wi.callback, wi.runnable, error, result)
+			else:
+				try:
+					self.condition.wait()
+				except Exception as e:
+					raise e
+		self.condition.release()
 
 class ThreadedWorker(threading .Thread):
 	def __init__(self, owner):

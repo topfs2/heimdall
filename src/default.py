@@ -25,6 +25,7 @@ def main():
 	uri = "file:///home/SomeUser/movies/Horrible Bosses.mkv" # A file which doesn't exist, just used for testing
 	def c(s):
 		print s
+		pool.quit()
 
 	s = engine.get(uri, c)
 
