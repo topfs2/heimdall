@@ -6,6 +6,7 @@ from heimdall.predicates import *
 
 import mutagen
 from urlparse import urlparse
+from urllib import quote_plus, unquote_plus
 
 class ExtractTags(tasks.SubjectTask):
 	demand = [
@@ -22,7 +23,7 @@ class ExtractTags(tasks.SubjectTask):
 	def run(self):
 		uri = urlparse(self.subject.uri)
 		if uri.scheme == "file":
-			f = mutagen.File(uri.path, easy=True)
+			f = mutagen.File(self.subject.uri[7:], easy=True)
 
 			for album in f.get("album", []):
 				self.subject.emit(upnp.album, album)
