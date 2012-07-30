@@ -80,8 +80,11 @@ class SearchArtist(tasks.SubjectTask):
 	]
 
 	def require(self):
-		artist = self.subject[upnp.artist]
-		return resources.SimpleResource("http://www.theaudiodb.com/api/v1/json/{0}/search.php?s={1}".format(api_key, quote_plus(artist)))
+		artist = self.subject[upnp.artist].encode("utf-8")
+
+		path = "http://www.theaudiodb.com/api/v1/json/{0}/search.php?s={1}".format(api_key, quote_plus(artist))
+
+		return resources.SimpleResource(path)
 
 	def run(self, resource):
 		result = json.loads(resource)
@@ -105,8 +108,8 @@ class SearchAlbum(tasks.SubjectTask):
 	]
 
 	def require(self):
-		artist = self.subject[upnp.artist]
-		album = self.subject[upnp.album]
+		artist = self.subject[upnp.artist].encode("utf-8")
+		album = self.subject[upnp.album].encode("utf-8")
 
 		path = "http://www.theaudiodb.com/api/v1/json/{0}/searchalbum.php?s={1}&a={2}".format(api_key, quote_plus(artist), quote_plus(album))
 
