@@ -102,44 +102,37 @@ class Subject(object):
 
 	def _scheduleNonConflictingTasks(self):
 		possible_tasks = purge_impossible_tasks(self, self.availableTasks)
-		print "PossibleTasks  ", possible_tasks
-
 		doable_tasks = find_doable_tasks(self, possible_tasks)
-		print "DoableTasks    ", doable_tasks
 		doable_tasks = purge_conflicting_tasks(doable_tasks)
-		print "NoConflictTasks", doable_tasks
 
 		if len(doable_tasks) > 0:
 			for t in doable_tasks:
-				print "Scheduling", t
 				#self.availableTasks.remove(t)
 				createdTask = t(self)
 				self.runningTasks.append(createdTask)
 				self.taskQueue.addTask(createdTask, self)
 
 			self.task_path.append(doable_tasks)
-
 		else:
-			print "NO tasks left"
-			print self.task_path
-			if self.callback:
-				self.callback(self)
+			print "Scheduled order:", self.task_path
+			self.callback(None, self)
 
 		self.availableTasks = [t for t in possible_tasks if t not in doable_tasks]
 
 	def onDone(self, task, error, result):
 		if error:
-			raise error
+			self.callback(error, None)
+		else:
+			self.condition.acquire()
 
-		self.condition.acquire()
+			if task in self.runningTasks:
+				self.runningTasks.remove(task)
 
-		if task in self.runningTasks:
-			self.runningTasks.remove(task)
+			if len(self.runningTasks) == 0:
+				self._scheduleNonConflictingTasks()
 
-		if len(self.runningTasks) == 0:
-			self._scheduleNonConflictingTasks()
+			self.condition.release()
 
-		self.condition.release()
 
 class Engine(object):
 	def __init__(self, threadPool):

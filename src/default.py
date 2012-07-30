@@ -14,8 +14,19 @@ import json
 import debug
 
 import time
+from urlparse import urlparse
+import sys
 
-def main():
+def main(uri):
+
+	if uri == None:
+		uri = "file:///home/SomeUser/movies/Horrible Bosses.mkv" # A file which doesn't exist, just used for testing
+
+	if urlparse(uri).scheme == "":
+		uri = "file://" + uri
+
+	print "Running heimdall upon", uri
+
 	pool = MainloopThreadPool()
 	engine = Engine(pool)
 	engine.registerModule(tmdb.module)
@@ -26,9 +37,8 @@ def main():
 
 	subjects = dict()
 
-	uri = "file:///home/SomeUser/movies/Horrible Bosses.mkv" # A file which doesn't exist, just used for testing
-	def c(s):
-		print s
+	def c(error, subject):
+		print subject
 		pool.quit()
 
 	s = engine.get(uri, c)
@@ -38,4 +48,4 @@ def main():
 #	print json.dumps(s.dump(), sort_keys=True, indent=4)
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1] if len(sys.argv) >= 2 else None)
