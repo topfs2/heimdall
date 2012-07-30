@@ -35,7 +35,7 @@ class ItemPredicateObject(tasks.SubjectTask):
 	]
 
 	def run(self):
-		path = urlsplit(self.subject.uri).path
+		path = self.subject.uri
 		ext = path[path.rindex("."):].lower()
 		mime_type = mime_types.get(ext, None)
 
