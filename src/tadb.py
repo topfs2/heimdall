@@ -6,6 +6,7 @@ from heimdall.predicates import *
 
 import json
 from urllib import unquote_plus, quote_plus
+import types
 
 api_key = "78626d636d76696473706c"
 
@@ -85,7 +86,10 @@ class SearchArtist(tasks.SubjectTask):
 	def run(self, resource):
 		result = json.loads(resource)
 
-		for r in result.get("artists", []):
+		artists = result.get("artists", [])
+		artists = artists if type(artists) == types.ListType else []
+
+		for r in artists:
 			artist = r["artist"]
 			if "idArtist" in artist:
 				self.subject.emit(upnp.artist, "{0}artist/{1}".format(tadb_base, artist["idArtist"]))
@@ -111,9 +115,10 @@ class SearchAlbum(tasks.SubjectTask):
 	def run(self, resource):
 		result = json.loads(resource)
 
-		print result
+		albums = result.get("album", [])
+		albums = albums if type(albums) == types.ListType else []
 
-		for r in result.get("album", []):
+		for r in albums:
 			album = r["album"]
 			if "idAlbum" in album:
 				self.subject.emit(upnp.album, "{0}album/{1}".format(tadb_base, album["idAlbum"]))
