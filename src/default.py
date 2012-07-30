@@ -38,6 +38,9 @@ def main(uri):
 	subjects = dict()
 
 	def c(error, subject):
+		if error:
+			raise error
+
 		print subject
 		pool.quit()
 
