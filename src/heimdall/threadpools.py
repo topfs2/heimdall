@@ -76,7 +76,7 @@ class MainloopThreadPool(object):
 					raise e
 		self.condition.release()
 
-class ThreadedWorker(threading .Thread):
+class ThreadedWorker(threading.Thread):
 	def __init__(self, owner):
 		super(ThreadedWorker, self).__init__()
 		self.owner = owner
