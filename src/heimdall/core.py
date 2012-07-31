@@ -10,6 +10,9 @@ from collections import defaultdict
 from itertools import permutations
 from itertools import combinations
 
+import logging
+log = logging.getLogger("heimdall.core")
+
 def isolate_if_single(d):
 	if d == None or len(d) == 0:
 		return None
@@ -114,14 +117,13 @@ class Subject(object):
 
 		if len(doable_tasks) > 0:
 			for t in doable_tasks:
-				#self.availableTasks.remove(t)
 				createdTask = t(self)
 				self.runningTasks.append(createdTask)
 				self.taskQueue.addTask(createdTask, self)
 
 			self.task_path.append(doable_tasks)
 		else:
-			print "Scheduled order:", self.task_path
+			log.debug("Final scheduling order became", self.task_path)
 			self.callback(None, self)
 
 		self.availableTasks = [t for t in possible_tasks if t not in doable_tasks]
@@ -139,7 +141,6 @@ class Subject(object):
 				self._scheduleNonConflictingTasks()
 
 			self.condition.release()
-
 
 class Engine(object):
 	def __init__(self, threadPool):
