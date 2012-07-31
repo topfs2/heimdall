@@ -96,9 +96,16 @@ class Subject(object):
 
 		return s
 
-	def __str__(self):
-		s = self.dump()
-		return "Subject(id={0}, Class={1}) {2}".format(self.uri, self.Class, json.dumps(s, sort_keys=True, indent=4))
+	def __repr__(self):
+		s = {
+			"Subject": {
+				"id": self.uri,
+				"Class": self.Class,
+				"metadata": self.dump()
+			}
+		}
+
+		return json.dumps(s, sort_keys=True, indent=4)
 
 	def _scheduleNonConflictingTasks(self):
 		possible_tasks = purge_impossible_tasks(self, self.availableTasks)
