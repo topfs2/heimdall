@@ -1,6 +1,9 @@
 from collections import deque
 from collections import namedtuple
 import threading
+import logging
+
+log = logging.getLogger("heimdall.threadpools")
 
 class Runnable(object):
 	def run(self, *args, **kwargs):
@@ -28,6 +31,18 @@ def safe_callback(callback, runnable, error, result):
 	else:
 		callback.onDone(runnable, error, result)
 
+def safe_execute(wi):
+	error = None
+	result = None
+	try:
+		log.debug("Running %s in %s with args %s and kwargs %s", wi.runnable, threading.current_thread(), wi.args, wi.kwargs)
+		result = safe_run(wi.runnable, wi.args, wi.kwargs)
+	except Exception as e:
+		error = e
+		log.exception("Failure on run of %s with args %s and kwargs %s", str(wi.runnable), json.dumps(wi.args), json.dumps(wi.kwargs))
+	finally:
+		safe_callback(wi.callback, wi.runnable, error, result)
+
 class MainloopThreadPool(object):
 	def __init__(self):
 		self.condition = threading.Condition()
@@ -41,6 +56,7 @@ class MainloopThreadPool(object):
 		self.condition.release()
 
 	def quit(self):
+		log.debug("Quiting threadpool")
 		self.condition.acquire()
 		self.run = False
 		self.condition.notifyAll()
@@ -51,18 +67,12 @@ class MainloopThreadPool(object):
 		while self.run:
 			if len(self.queue) > 0:
 				wi = self.queue.popleft()
-				error = None
-				result = None
-				try:
-					result = safe_run(wi.runnable, wi.args, wi.kwargs)
-				except Exception as e:
-					error = e
-				finally:
-					safe_callback(wi.callback, wi.runnable, error, result)
+				safe_execute(wi)
 			else:
 				try:
 					self.condition.wait()
 				except Exception as e:
+					log.exception("Failure while waiting")
 					raise e
 		self.condition.release()
 
@@ -76,14 +86,7 @@ class ThreadedWorker(threading .Thread):
 		wi = self.owner.getNextWorkItem()
 
 		while wi:
-			error = None
-			result = None
-			try:
-				result = safe_run(wi.runnable, wi.args, wi.kwargs)
-			except Exception as e:
-				error = e
-			finally:
-				safe_callback(wi.callback, wi.runnable, error, result)
+			safe_execute(wi)
 
 			wi = self.owner.getNextWorkItem()
 
@@ -128,6 +131,7 @@ class OptimisticThreadPool(object):
 		self.condition.release()
 
 	def quit(self):
+		log.debug("Quiting threadpool")
 		self.condition.acquire()
 		self.queue = deque()
 		self.acceptNewTasks = False
