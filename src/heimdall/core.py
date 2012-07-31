@@ -73,7 +73,7 @@ class Subject(object):
 	def emit(self, predicate, object):
 		self.condition.acquire()
 
-		if object != None:
+		if object != None and object != "":
 			self.subject[predicate].append(object)
 
 		self.condition.release()
