@@ -89,7 +89,7 @@ class ThreadedWorker(threading .Thread):
 
 		self.owner.onDone(self)
 
-class ThreadedThreadPool(object):
+class OptimisticThreadPool(object):
 	def __init__(self, numberWorkers):
 		self.condition = threading.Condition()
 		self.queue = deque()
