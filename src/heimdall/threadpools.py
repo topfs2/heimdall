@@ -87,19 +87,23 @@ class ThreadedWorker(threading .Thread):
 
 			wi = self.owner.getNextWorkItem()
 
+		self.owner.onDone(self)
+
 class ThreadedThreadPool(object):
 	def __init__(self, numberWorkers):
 		self.condition = threading.Condition()
 		self.queue = deque()
+		self.acceptNewTasks = True
 		self.numberWorkers = numberWorkers
 		self.workers = list()
 
 	def append(self, runnable, callback, *args, **kwargs):
 		self.condition.acquire()
-		self.queue.append(WorkItem(runnable, callback, args, kwargs))
-		if len(self.workers) < self.numberWorkers:
-			self.workers.append(ThreadedWorker(self))
-		self.condition.notifyAll()
+		if self.acceptNewTasks:
+			self.queue.append(WorkItem(runnable, callback, args, kwargs))
+			if len(self.workers) < self.numberWorkers:
+				self.workers.append(ThreadedWorker(self))
+			self.condition.notifyAll()
 		self.condition.release()
 
 	def getNextWorkItem(self):
@@ -110,3 +114,22 @@ class ThreadedThreadPool(object):
 		self.condition.notifyAll()
 		self.condition.release()
 		return wi
+
+	def onDone(self, worker):
+		self.condition.acquire()
+		self.workers.remove(worker)
+		self.condition.notifyAll()
+		self.condition.release()
+
+	def join(self):
+		self.condition.acquire()
+		while len(self.workers) > 0 and len(self.queue) > 0:
+			self.condition.wait()
+		self.condition.release()
+
+	def quit(self):
+		self.condition.acquire()
+		self.queue = deque()
+		self.acceptNewTasks = False
+		self.condition.notifyAll()
+		self.condition.release()
