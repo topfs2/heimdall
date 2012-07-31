@@ -5,7 +5,7 @@ from heimdall.predicates import *
 from heimdall.threadpools import MainloopThreadPool
 
 import tmdb
-import tadb
+import theaudiodb
 import item
 import video_item
 import audio_item
@@ -30,7 +30,7 @@ def main(uri):
 	pool = MainloopThreadPool()
 	engine = Engine(pool)
 	engine.registerModule(tmdb.module)
-	engine.registerModule(tadb.module)
+	engine.registerModule(theaudiodb.module)
 	engine.registerModule(item.module)
 	engine.registerModule(video_item.module)
 	engine.registerModule(audio_item.module)
