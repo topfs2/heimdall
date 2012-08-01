@@ -57,7 +57,10 @@ def main(folder):
 	for f in fileList:
 		engine.get(f, c)
 
-	pool.join()
+	try:
+		pool.join()
+	except KeyboardInterrupt:
+		pool.quit()
 
 	print "done"
 

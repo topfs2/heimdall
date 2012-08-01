@@ -46,7 +46,10 @@ def main(uri):
 
 	s = engine.get(uri, c)
 
-	pool.join()
+	try:
+		pool.join()
+	except KeyboardInterrupt:
+		pool.quit()
 
 #	print json.dumps(s.dump(), sort_keys=True, indent=4)
 
