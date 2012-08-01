@@ -36,7 +36,8 @@ def main(folder):
 	fileList = []
 	for root, subFolders, files in os.walk(folder):
 		for f in files:
-		    fileList.append(u"file://{0}/{1}".format(root,f))
+			p = os.path.join("file://", root, f)
+			fileList.append(p)
 
 	print "Files to process", len(fileList)
 
