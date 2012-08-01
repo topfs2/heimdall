@@ -21,9 +21,14 @@ class ExtractTags(tasks.SubjectTask):
 	]
 
 	def run(self):
-		uri = urlparse(self.subject.uri)
-		if uri.scheme == "file":
-			f = mutagen.File(self.subject.uri[7:], easy=True)
+		uri = None
+		if self.subject.uri[0] == "/":
+			uri = self.subject.uri
+		elif self.subject.uri[:7] == "file://":
+			uri = self.subject.uri[7:]
+
+		if uri:
+			f = mutagen.File(uri, easy=True)
 
 			for album in f.get("album", []):
 				self.subject.emit(upnp.album, album)

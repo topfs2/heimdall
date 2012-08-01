@@ -25,7 +25,7 @@ mime_type_to_class = {
 
 class ItemPredicateObject(tasks.SubjectTask):
 	demand = [
-		demands.subject("^file://")
+		demands.subject("^(/|file://)")
 	]
 
 	supply = [
