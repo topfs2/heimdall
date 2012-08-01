@@ -66,31 +66,28 @@ class MainloopThreadPool(object):
 		self.run = True
 
 	def append(self, runnable, callback, *args, **kwargs):
-		self.condition.acquire()
-		self.queue.append(WorkItem(runnable, callback, args, kwargs))
-		self.condition.notifyAll()
-		self.condition.release()
+		with self.condition:
+			self.queue.append(WorkItem(runnable, callback, args, kwargs))
+			self.condition.notifyAll()
 
 	def quit(self):
 		log.debug("Quiting threadpool")
-		self.condition.acquire()
-		self.run = False
-		self.condition.notifyAll()
-		self.condition.release()
+		with self.condition:
+			self.run = False
+			self.condition.notifyAll()
 
 	def join(self):
-		self.condition.acquire()
-		while self.run:
-			if len(self.queue) > 0:
-				wi = self.queue.popleft()
-				safe_execute(wi)
-			else:
-				try:
-					self.condition.wait()
-				except Exception as e:
-					log.exception("Failure while waiting")
-					raise e
-		self.condition.release()
+		with self.condition:
+			while self.run:
+				if len(self.queue) > 0:
+					wi = self.queue.popleft()
+					safe_execute(wi)
+				else:
+					try:
+						self.condition.wait()
+					except Exception as e:
+						log.exception("Failure while waiting")
+						raise e
 
 class SingleThreadedThreadPool(object):
 	def __init__(self):
