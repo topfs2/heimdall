@@ -92,6 +92,45 @@ class MainloopThreadPool(object):
 					raise e
 		self.condition.release()
 
+class SingleThreadedThreadPool(object):
+	def __init__(self):
+		self.condition = threading.Condition()
+		self.queue = deque()
+		self.run = True
+		self.worker = None
+
+	def append(self, runnable, callback, *args, **kwargs):
+		with self.condition:
+			self.queue.append(WorkItem(runnable, callback, args, kwargs))
+			if self.worker == None:
+				self.worker = ThreadedWorker(self)
+			self.condition.notifyAll()
+
+	def getNextWorkItem(self):
+		with self.condition:
+			wi = None
+			if len(self.queue) > 0 and self.run:
+				wi = self.queue.popleft()
+			self.condition.notifyAll()
+			return wi
+
+	def onDone(self, worker):
+		log.debug("Removing worker from threadpool")
+		with self.condition:
+			self.worker = None
+			self.condition.notifyAll()
+
+	def quit(self):
+		log.debug("Quiting threadpool")
+		with self.condition:
+			self.run = False
+			self.condition.notifyAll()
+
+	def join(self):
+		with self.condition:
+			while self.run and self.worker and len(self.queue) > 0:
+				self.condition.wait()
+
 class OptimisticThreadPool(object):
 	def __init__(self, numberWorkers):
 		self.condition = threading.Condition()
