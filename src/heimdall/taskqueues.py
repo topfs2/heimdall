@@ -53,19 +53,15 @@ class SubjectTaskQueue(object):
 
 	# Will block until task has been added to the queue, will normally be quick
 	def addTask(self, task, callback):
-		self.condition.acquire()
-
-		try:
-			buildProxy(self.threadPool, task, self)
-			self.runningTasks[task] = callback
-		except Exception as error:
-			print task, "Error adding task. Exception:", type(error), error
-			safe_callback(callback, task, error, None)
-
-		self.condition.release()
+		with self.condition:
+			try:
+				buildProxy(self.threadPool, task, self)
+				self.runningTasks[task] = callback
+			except Exception as error:
+				print task, "Error adding task. Exception:", type(error), error
+				safe_callback(callback, task, error, None)
 
 	def onDone(self, task, error, result):
-		self.condition.acquire()
-		safe_callback(self.runningTasks[task], task, error, result)
-		del self.runningTasks[task]
-		self.condition.release()
+		with self.condition:
+			safe_callback(self.runningTasks[task], task, error, result)
+			del self.runningTasks[task]
