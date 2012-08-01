@@ -140,39 +140,34 @@ class OptimisticThreadPool(object):
 		self.workers = list()
 
 	def append(self, runnable, callback, *args, **kwargs):
-		self.condition.acquire()
-		if self.acceptNewTasks:
-			self.queue.append(WorkItem(runnable, callback, args, kwargs))
-			if len(self.workers) < self.numberWorkers:
-				self.workers.append(ThreadedWorker(self))
-			self.condition.notifyAll()
-		self.condition.release()
+		with self.condition:
+			if self.acceptNewTasks:
+				self.queue.append(WorkItem(runnable, callback, args, kwargs))
+				if len(self.workers) < self.numberWorkers:
+					self.workers.append(ThreadedWorker(self))
+				self.condition.notifyAll()
 
 	def getNextWorkItem(self):
-		self.condition.acquire()
-		wi = None
-		if len(self.queue) > 0:
-			wi = self.queue.popleft()
-		self.condition.notifyAll()
-		self.condition.release()
-		return wi
+		with self.condition:
+			wi = None
+			if len(self.queue) > 0:
+				wi = self.queue.popleft()
+			self.condition.notifyAll()
+			return wi
 
 	def onDone(self, worker):
-		self.condition.acquire()
-		self.workers.remove(worker)
-		self.condition.notifyAll()
-		self.condition.release()
+		with self.condition:
+			self.workers.remove(worker)
+			self.condition.notifyAll()
 
 	def join(self):
-		self.condition.acquire()
-		while len(self.workers) > 0 and len(self.queue) > 0:
-			self.condition.wait()
-		self.condition.release()
+		with self.condition:
+			while len(self.workers) > 0 and len(self.queue) > 0:
+				self.condition.wait()
 
 	def quit(self):
 		log.debug("Quiting threadpool")
-		self.condition.acquire()
-		self.queue = deque()
-		self.acceptNewTasks = False
-		self.condition.notifyAll()
-		self.condition.release()
+		with self.condition:
+			self.queue = deque()
+			self.acceptNewTasks = False
+			self.condition.notifyAll()
