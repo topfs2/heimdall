@@ -43,6 +43,22 @@ def safe_execute(wi):
 	finally:
 		safe_callback(wi.callback, wi.runnable, error, result)
 
+class ThreadedWorker(threading.Thread):
+	def __init__(self, owner):
+		super(ThreadedWorker, self).__init__()
+		self.owner = owner
+		self.start()
+
+	def run(self):
+		wi = self.owner.getNextWorkItem()
+
+		while wi:
+			safe_execute(wi)
+
+			wi = self.owner.getNextWorkItem()
+
+		self.owner.onDone(self)
+
 class MainloopThreadPool(object):
 	def __init__(self):
 		self.condition = threading.Condition()
@@ -75,22 +91,6 @@ class MainloopThreadPool(object):
 					log.exception("Failure while waiting")
 					raise e
 		self.condition.release()
-
-class ThreadedWorker(threading.Thread):
-	def __init__(self, owner):
-		super(ThreadedWorker, self).__init__()
-		self.owner = owner
-		self.start()
-
-	def run(self):
-		wi = self.owner.getNextWorkItem()
-
-		while wi:
-			safe_execute(wi)
-
-			wi = self.owner.getNextWorkItem()
-
-		self.owner.onDone(self)
 
 class OptimisticThreadPool(object):
 	def __init__(self, numberWorkers):
