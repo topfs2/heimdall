@@ -1,5 +1,3 @@
-from threadpools import safe_callback
-
 from collections import deque
 from collections import namedtuple
 import threading
@@ -24,7 +22,7 @@ class ProxyTaskCallback(object):
 
 	def onDone(self, runnable, error, result):
 		if error:
-			safe_callback(self.callback, self.task, error, None)
+			self.callback(self.task, error, None)
 		else:
 			i = self.requirementMap[runnable]
 			self.requirements[i] = result
@@ -41,7 +39,7 @@ def buildProxy(threadPool, task, callback):
 
 		proxy = ProxyTaskCallback(threadPool, task, callback, requirements)
 		for r in requirements:
-			buildProxy(threadPool, r, proxy)
+			buildProxy(threadPool, r, proxy.onDone)
 	else:
 		threadPool.append(task, callback, 0)
 
@@ -55,13 +53,13 @@ class SubjectTaskQueue(object):
 	def addTask(self, task, callback):
 		with self.condition:
 			try:
-				buildProxy(self.threadPool, task, self)
+				buildProxy(self.threadPool, task, self.onDone)
 				self.runningTasks[task] = callback
 			except Exception as error:
 				print task, "Error adding task. Exception:", type(error), error
-				safe_callback(callback, task, error, None)
+				callback(task, error, None)
 
 	def onDone(self, task, error, result):
 		with self.condition:
-			safe_callback(self.runningTasks[task], task, error, result)
+			self.runningTasks[task](task, error, result)
 			del self.runningTasks[task]

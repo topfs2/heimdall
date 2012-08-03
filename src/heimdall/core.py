@@ -119,7 +119,7 @@ class Subject(object):
 			for t in doable_tasks:
 				createdTask = t(self)
 				self.runningTasks.append(createdTask)
-				self.taskQueue.addTask(createdTask, self)
+				self.taskQueue.addTask(createdTask, self.onDone)
 
 			self.task_path.append(doable_tasks)
 		else:

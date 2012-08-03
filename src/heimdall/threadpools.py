@@ -9,10 +9,6 @@ class Runnable(object):
 	def run(self, *args, **kwargs):
 		pass
 
-class Callback(object):
-	def onDone(self, runnable, error, result):
-		pass
-
 class ThreadPool(object):
 	def append(self, runnable, callback, *args, **kwargs):
 		pass
@@ -25,12 +21,6 @@ def safe_run(runnable, args, kwargs):
 	else:
 		return runnable.run(*args, **kwargs)
 
-def safe_callback(callback, runnable, error, result):
-	if callable(callback):
-		callback(runnable, error, result)
-	else:
-		callback.onDone(runnable, error, result)
-
 def safe_execute(wi):
 	error = None
 	result = None
@@ -41,7 +31,7 @@ def safe_execute(wi):
 		error = e
 		log.exception("Failure on run of %s with args %s and kwargs %s", str(wi.runnable), json.dumps(wi.args), json.dumps(wi.kwargs))
 	finally:
-		safe_callback(wi.callback, wi.runnable, error, result)
+		wi.callback(wi.runnable, error, result)
 
 class ThreadedWorker(threading.Thread):
 	def __init__(self, owner):
