@@ -5,28 +5,18 @@ import logging
 
 log = logging.getLogger("heimdall.threadpools")
 
-class Runnable(object):
-	def run(self, *args, **kwargs):
-		pass
-
 class ThreadPool(object):
 	def append(self, runnable, callback, *args, **kwargs):
 		pass
 
 WorkItem = namedtuple("WorkItem", [ "runnable", "callback", "priority", "args", "kwargs" ])
 
-def safe_run(runnable, args, kwargs):
-	if callable(runnable):
-		return runnable(*args, **kwargs)
-	else:
-		return runnable.run(*args, **kwargs)
-
 def safe_execute(wi):
 	error = None
 	result = None
 	try:
 		log.debug("Running %s in %s with args %s and kwargs %s", wi.runnable, threading.current_thread(), wi.args, wi.kwargs)
-		result = safe_run(wi.runnable, wi.args, wi.kwargs)
+		result = wi.runnable(*wi.args, **wi.kwargs)
 	except Exception as e:
 		error = e
 		log.exception("Failure on run of %s with args %s and kwargs %s", str(wi.runnable), json.dumps(wi.args), json.dumps(wi.kwargs))

@@ -17,19 +17,20 @@ class ProxyTaskCallback(object):
 
 		for i in range(len(requirements)):
 			r = requirements[i]
-			self.requirementMap[r] = i
+			self.requirementMap[r.run] = i
 			self.requirements.append(NotFilled)
 
 	def onDone(self, runnable, error, result):
 		if error:
 			self.callback(self.task, error, None)
 		else:
-			i = self.requirementMap[runnable]
+			i = self.requirementMap[runnable.run]
 			self.requirements[i] = result
 
 			if all([r != NotFilled for r in self.requirements]):
 				# Use the amount of requirements as priority, the more requirements a runnable have the more memory it has occupied so its a fair assesment on how quickly we want it to be done
-				self.threadPool.append(self.task, self.callback, len(self.requirements), *self.requirements)
+				proxy_callback = lambda _, r, e : self.callback(self.task, r, e)
+				self.threadPool.append(self.task.run, proxy_callback, len(self.requirements), *self.requirements)
 
 def buildProxy(threadPool, task, callback):
 	requirements = task.require()
@@ -41,7 +42,8 @@ def buildProxy(threadPool, task, callback):
 		for r in requirements:
 			buildProxy(threadPool, r, proxy.onDone)
 	else:
-		threadPool.append(task, callback, 0)
+		proxy_callback = lambda _, r, e : callback(task, r, e)
+		threadPool.append(task.run, proxy_callback, 0)
 
 class SubjectTaskQueue(object):
 	def __init__(self, threadPool):
