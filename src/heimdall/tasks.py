@@ -1,4 +1,12 @@
+class deferedrun(object):
+	def __init__(self, runnable, requirements):
+		self.runnable = runnable
+		self.requirements = requirements
+
 class Task(object):
+	def preFlight(self):
+		return deferedrun(self.run, self.require())
+
 	# Return required tasks to run this task
 	# All tasks needed should be created, i.e. return objects not classes
 	# The data returned by an required task will be piped to the run method in order of require

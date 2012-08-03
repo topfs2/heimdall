@@ -1,3 +1,5 @@
+import tasks
+
 from collections import deque
 from collections import namedtuple
 import threading
@@ -6,62 +8,85 @@ import types
 class NotFilled(object):
 	pass
 
-class ProxyTaskCallback(object):
-	def __init__(self, threadPool, task, callback, requirements):
-		self.threadPool = threadPool
-		self.task = task
-		self.callback = callback
-
-		self.requirementMap = dict()
-		self.requirements = list()
-
-		for i in range(len(requirements)):
-			r = requirements[i]
-			self.requirementMap[r.run] = i
-			self.requirements.append(NotFilled)
-
-	def onDone(self, runnable, error, result):
-		if error:
-			self.callback(self.task, error, None)
-		else:
-			i = self.requirementMap[runnable.run]
-			self.requirements[i] = result
-
-			if all([r != NotFilled for r in self.requirements]):
-				# Use the amount of requirements as priority, the more requirements a runnable have the more memory it has occupied so its a fair assesment on how quickly we want it to be done
-				proxy_callback = lambda _, r, e : self.callback(self.task, r, e)
-				self.threadPool.append(self.task.run, proxy_callback, len(self.requirements), *self.requirements)
-
-def buildProxy(threadPool, task, callback):
-	requirements = task.require()
-
-	if requirements:
-		requirements = requirements if type(requirements) == types.ListType else [ requirements ]
-
-		proxy = ProxyTaskCallback(threadPool, task, callback, requirements)
-		for r in requirements:
-			buildProxy(threadPool, r, proxy.onDone)
-	else:
-		proxy_callback = lambda _, r, e : callback(task, r, e)
-		threadPool.append(task.run, proxy_callback, 0)
-
 class TaskQueue(object):
 	def __init__(self, threadPool):
 		self.threadPool = threadPool
-		self.runningTasks = dict()
-		self.condition = threading.Condition()
 
-	# Will block until task has been added to the queue, will normally be quick
+		self.condition = threading.Condition()
+		self.runnableOwnerMap = dict()
+		self.taskDataMap = dict()
+		self.requirementOwnerMap = dict()
+
 	def addTask(self, task, callback):
 		with self.condition:
-			try:
-				buildProxy(self.threadPool, task, self.onDone)
-				self.runningTasks[task] = callback
-			except Exception as error:
-				print task, "Error adding task. Exception:", type(error), error
-				callback(task, error, None)
+			taskData = {
+				"task": task,
+				"callback": callback,
+				"requirementsMap": dict(),
+				"requirements": list(),
+				"runnable": None
+			}
 
-	def onDone(self, task, error, result):
+			self.taskDataMap[task] = taskData
+
+			rr = task.preFlight()
+			self._addRunnable(task, rr.runnable, rr.requirements)
+
+	def _addRunnable(self, owner, runnable, requirements):
 		with self.condition:
-			self.runningTasks[task](task, error, result)
-			del self.runningTasks[task]
+			self.runnableOwnerMap[runnable] = owner
+			taskData = self.taskDataMap[owner]
+
+			taskData["runnable"] = runnable
+			taskData["requirementsMap"] = dict()
+			taskData["requirements"] = list()
+
+			if requirements:
+				requirements = requirements if type(requirements) == types.ListType else [ requirements ]
+
+				for r in requirements:
+					taskData["requirementsMap"][r] = len(taskData["requirements"])
+					taskData["requirements"].append(NotFilled)
+					self.requirementOwnerMap[r] = owner
+					self.addTask(r, self.onRequirementDone)
+			else:
+				self.threadPool.append(runnable, self.onRunnableDone, 0)
+
+	def onRunnableDone(self, runnable, error, result):
+		with self.condition:
+			owner = self.runnableOwnerMap[runnable]
+			taskData = self.taskDataMap[owner]
+
+			if error:
+				self.onTaskDone(taskData["task"], error, None)
+			elif isinstance(result, tasks.deferedrun):
+				self._addRunnable(self.runnableOwnerMap[runnable], result.runnable, result.requirements)
+			else:
+				self.onTaskDone(taskData["task"], None, result)
+
+			del self.runnableOwnerMap[runnable]
+
+	def onTaskDone(self, task, error, result):
+		with self.condition:
+			taskData = self.taskDataMap[task]
+			taskData["callback"](task, error, result)
+
+			del self.taskDataMap[task]
+
+	def onRequirementDone(self, r, error, result):
+		with self.condition:
+			owner = self.requirementOwnerMap[r]
+			taskData = self.taskDataMap[owner]
+
+			if error:
+				self.callback(taskData["task"], error, None)
+			else:
+				i = taskData["requirementsMap"][r]
+				taskData["requirements"][i] = result
+
+				requirements = taskData["requirements"]
+
+				if all([req != NotFilled for req in requirements]):
+					self.threadPool.append(taskData["runnable"], self.onRunnableDone, len(requirements), *requirements)
+
+			del self.requirementOwnerMap[r]
