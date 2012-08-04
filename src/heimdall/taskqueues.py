@@ -45,7 +45,7 @@ def buildProxy(threadPool, task, callback):
 		proxy_callback = lambda _, r, e : callback(task, r, e)
 		threadPool.append(task.run, proxy_callback, 0)
 
-class SubjectTaskQueue(object):
+class TaskQueue(object):
 	def __init__(self, threadPool):
 		self.threadPool = threadPool
 		self.runningTasks = dict()
