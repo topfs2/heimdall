@@ -70,7 +70,7 @@ class MainloopThreadPool(object):
 					safe_execute(wi)
 				else:
 					try:
-						self.condition.wait()
+						self.condition.wait(7)
 					except Exception as e:
 						log.exception("Failure while waiting")
 						raise e
