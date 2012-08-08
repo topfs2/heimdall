@@ -19,8 +19,8 @@ class GuessVideoOrEpisode(tasks.SubjectTask):
 		duration = self.subject["video_stream"]["duration"]
 
 		if duration > 3600: # if longer than an hour, just guess movie
-			self.subject.Class = "item.video.Movie"
+			self.subject.extendClass("item.video.Movie")
 		else:
-			self.subject.Class = "item.video.Episode"
+			self.subject.extendClass("item.video.Episode")
 
 module = [ GuessVideoOrEpisode ]

@@ -66,8 +66,8 @@ class ExtractStreamDetails(tasks.SubjectTask):
 				self.subject.emit("audio_stream", a)
 
 			if len(video_streams) > 0:
-				self.subject.Class = "item.video"
+				self.subject.extendClass("item.video")
 			elif len(audio_streams) > 0:
-				self.subject.Class = "item.audio"
+				self.subject.extendClass("item.audio")
 
 module = [ ExtractStreamDetails ]

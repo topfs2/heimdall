@@ -41,6 +41,6 @@ class ExtractTags(tasks.SubjectTask):
 			if len(title) > 0:
 				self.subject.replace(dc.title, title[0])
 
-			self.subject.Class = "item.audio.musicTrack"
+			self.subject.extendClass("item.audio.musicTrack")
 
 module = [ ExtractTags ]

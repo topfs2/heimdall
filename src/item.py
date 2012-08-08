@@ -45,6 +45,6 @@ class ItemPredicateObject(tasks.SubjectTask):
 		self.subject.emit(dc.title, title)
 		self.subject.emit(dc.format, mime_type)
 
-		self.subject.Class = mime_type_to_class.get(mime_type, "item")
+		self.subject.extendClass(mime_type_to_class.get(mime_type, "item"))
 
 module = [ ItemPredicateObject ]

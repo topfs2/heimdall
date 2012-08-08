@@ -6,6 +6,7 @@ import demands, supplies
 import json
 import types
 import threading
+import re
 from collections import defaultdict
 from itertools import permutations
 from itertools import combinations
@@ -80,6 +81,13 @@ class Subject(object):
 	def replace(self, predicate, object):
 		del self.metadata[predicate]
 		self.metadata[predicate].append(object)
+
+
+	def extendClass(self, Class):
+		if re.match(self.Class, Class): # Input class is extended version of sought class, upgrade
+			self.Class = Class
+		elif not re.match(Class, self.Class): # Input class is a not less extended version of sought class, diamond problem
+			raise ValueError("{0} cannot extend to {1}, diamond problem".format(Class, self.Class))
 
 	def __repr__(self):
 		s = {
