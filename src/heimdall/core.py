@@ -53,11 +53,47 @@ def purge_conflicting_tasks(tasks):
 	return [t for t in tasks if t not in conflicting_tasks]
 
 class Subject(object):
-	def __init__(self, subjectTasks, taskQueue, callback, Class="", metadata={}):
+	def __init__(self, Class = "", metadata = {}):
+		self.Class = Class
+		self.metadata = defaultdict(list)
+
+		for key, value in metadata.items():
+			self.metadata[key].append(value)
+
+	def to_dict(self):
+		s = dict()
+		for key, value in self.metadata.items():
+			value = isolate_if_single(value)
+			if value:
+				s[key] = value
+
+		return s
+
+	def __getitem__(self, name):
+		# No lock since pythons dict should be thread safe
+		return isolate_if_single(self.metadata.get(name, None))
+
+	def emit(self, predicate, object):
+		if object != None and object != "":
+			self.metadata[predicate].append(object)
+
+	def replace(self, predicate, object):
+		del self.metadata[predicate]
+		self.metadata[predicate].append(object)
+
+	def __repr__(self):
+		s = {
+			"Class": self.Class,
+			"metadata": self.to_dict()
+		}
+
+		return json.dumps(s, sort_keys=True, indent=4)
+
+class SubjectTaskDispatcher(object):
+	def __init__(self, subject, subjectTasks, taskQueue, callback):
 		self.condition = threading.Condition()
 
-		self.Class = ""
-		self.subject = defaultdict(list)
+		self.subject = subject
 		self.callback = callback
 
 		self.runningTasks = list()
@@ -67,68 +103,23 @@ class Subject(object):
 
 		self.task_path = list() # For debugging purposes
 
-		# Before we run any tasks upgrade the subject with given information
-		self.Class = Class
-		for key, value in metadata.items():
-			self.emit(key, value)
-
 		self._scheduleNonConflictingTasks()
 
-	def __getitem__(self, name):
-		# No lock since pythons dict should be thread safe
-		return isolate_if_single(self.subject.get(name, None))
-
-	def emit(self, predicate, object):
-		self.condition.acquire()
-
-		if object != None and object != "":
-			self.subject[predicate].append(object)
-
-		self.condition.release()
-
-	def replace(self, predicate, object):
-		self.condition.acquire()
-		if object != None:
-			if predicate in self.subject:
-				del self.subject[predicate]
-
-			self.subject[predicate].append(object)
-		self.condition.release()
-
-	def dump(self):
-		s = dict()
-		for key, value in self.subject.items():
-			value = isolate_if_single(value)
-			if value:
-				s[key] = value
-
-		return s
-
-	def __repr__(self):
-		s = {
-			"Subject": {
-				"Class": self.Class,
-				"metadata": self.dump()
-			}
-		}
-
-		return json.dumps(s, sort_keys=True, indent=4)
-
 	def _scheduleNonConflictingTasks(self):
-		possible_tasks = purge_impossible_tasks(self, self.availableTasks)
-		doable_tasks = find_doable_tasks(self, possible_tasks)
+		possible_tasks = purge_impossible_tasks(self.subject, self.availableTasks)
+		doable_tasks = find_doable_tasks(self.subject, possible_tasks)
 		doable_tasks = purge_conflicting_tasks(doable_tasks)
 
 		if len(doable_tasks) > 0:
 			for t in doable_tasks:
-				createdTask = t(self)
+				createdTask = t(self.subject)
 				self.runningTasks.append(createdTask)
 				self.taskQueue.addTask(createdTask, self.onDone)
 
 			self.task_path.append(doable_tasks)
 		else:
 			log.debug("Final scheduling order became", self.task_path)
-			self.callback(None, self)
+			self.callback(None, self.subject)
 
 		self.availableTasks = [t for t in possible_tasks if t not in doable_tasks]
 
@@ -155,5 +146,5 @@ class Engine(object):
 		self.registeredTasks.extend([t for t in module if issubclass(t, tasks.SubjectTask)])
 
 	def get(self, subject, callback):
-		subject = Subject(self.registeredTasks, taskqueues.TaskQueue(self.threadPool), callback, metadata = subject)
-		return subject
+		std = SubjectTaskDispatcher(subject, self.registeredTasks, taskqueues.TaskQueue(self.threadPool), callback)
+		return std # TODO Should not return, should just keep a reference so it can be paused

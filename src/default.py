@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from heimdall.core import Engine
+from heimdall.core import Engine, Subject
 from heimdall.predicates import *
 from heimdall.threadpools import MainloopThreadPool
 
@@ -44,8 +44,11 @@ def main(uri):
 		print subject
 		pool.quit()
 
-	subject = dict()
-	subject[dc.identifier] = uri
+	metadata = dict()
+	metadata[dc.identifier] = uri
+	subject = Subject("", metadata)
+
+	print "Running heimdall upon", subject
 
 	engine.get(subject, c)
 

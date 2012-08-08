@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from heimdall.core import Engine
+from heimdall.core import Engine, Subject
 from heimdall.predicates import *
 from heimdall.threadpools import *
 
@@ -55,9 +55,10 @@ def main(folder):
 		if len(subjects) >= nbrBeforeQuit:
 			pool.quit()
 
-	for f in fileList:
-		subject = dict()
-		subject[dc.identifier] = f
+	for uri in fileList:
+		metadata = dict()
+		metadata[dc.identifier] = uri
+		subject = Subject("", metadata)
 
 		engine.get(subject, c)
 
