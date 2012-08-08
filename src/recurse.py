@@ -10,6 +10,7 @@ import theaudiodb
 import item
 import video_item
 import audio_item
+import media_item
 import json
 
 import debug
@@ -30,6 +31,7 @@ def main(folder):
 	engine.registerModule(item.module)
 	engine.registerModule(video_item.module)
 	engine.registerModule(audio_item.module)
+	engine.registerModule(media_item.module)
 
 	subjects = list()
 
