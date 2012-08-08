@@ -7,12 +7,12 @@ from heimdall.predicates import *
 import json
 from urllib import unquote_plus, quote_plus
 
-tmdb_base = "http://api.themoviedb.org/3"
+tmdb_api_base = "http://api.themoviedb.org/3/"
+tmdb_base = "http://themoviedb.org/"
 
 class MoviePredicateObject(tasks.SubjectTask):
 	demand = [
-		#demands.required(dc.identifier, "http://themoviedb.org/movie/")
-		demands.required(dc.identifier, "http://api.themoviedb.org/3/movie/")
+		demands.required(dc.identifier, tmdb_base + "movie/")
 	]
 
 	supply = [
@@ -25,9 +25,12 @@ class MoviePredicateObject(tasks.SubjectTask):
 	]
 
 	def require(self):
-		return [ 
-			resources.SimpleResource(tmdb_base + "/configuration?api_key=57983e31fb435df4df77afb854740ea9"),
-			resources.SimpleResource(self.subject[dc.identifier] + "?api_key=57983e31fb435df4df77afb854740ea9")
+		uri = self.subject[dc.identifier]
+		ID = uri[len(tmdb_base + "movie/"):]
+
+		return [
+			resources.SimpleResource(tmdb_api_base + "/configuration?api_key=57983e31fb435df4df77afb854740ea9"),
+			resources.SimpleResource(tmdb_api_base + "movie/" + ID + "?api_key=57983e31fb435df4df77afb854740ea9")
 		]
 
 	def run(self, configuration, resource):
@@ -71,7 +74,7 @@ class SearchMovieCollector(tasks.SubjectTask):
 
 		if "results" in result and len(result["results"]) > 0 and "id" in result["results"][0]:
 			ID = result["results"][0]["id"]
-			tm = "http://api.themoviedb.org/3/movie/" + str(ID)
+			tm = tmdb_base + "movie/" + str(ID)
 
 			self.subject.emit(owl.sameAs, tm)
 
