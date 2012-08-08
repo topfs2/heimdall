@@ -15,7 +15,7 @@ tadb_base = "http://www.theaudiodb.com/"
 
 class ArtistPredicateObject(tasks.SubjectTask):
 	demand = [
-		demands.subject(tadb_base + "artist/")
+		demands.required(dc.identifier, tadb_base + "artist/")
 	]
 
 	supply = [
@@ -27,7 +27,8 @@ class ArtistPredicateObject(tasks.SubjectTask):
 	]
 
 	def require(self):
-		artistID = self.subject.uri[len(tadb_base + "artist/"):]
+		uri = self.subject[dc.identifier]
+		artistID = uri[len(tadb_base + "artist/"):]
 		return resources.SimpleResource("http://www.theaudiodb.com/api/v1/json/{0}/artist.php?i={1}".format(api_key, artistID))
 
 	def run(self, resource):
@@ -47,7 +48,7 @@ class ArtistPredicateObject(tasks.SubjectTask):
 
 class AlbumPredicateObject(tasks.SubjectTask):
 	demand = [
-		demands.subject(tadb_base + "album/")
+		demands.required(dc.identifier, tadb_base + "album/")
 	]
 
 	supply = [
@@ -58,7 +59,8 @@ class AlbumPredicateObject(tasks.SubjectTask):
 	]
 
 	def require(self):
-		albumID = self.subject.uri[len(tadb_base + "album/"):]
+		uri = self.subject[dc.identifier]
+		albumID = uri[len(tadb_base + "album/"):]
 		return resources.SimpleResource("http://www.theaudiodb.com/api/v1/json/{0}/album.php?m={1}".format(api_key, albumID))
 
 	def run(self, resource):

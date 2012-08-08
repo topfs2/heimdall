@@ -56,7 +56,10 @@ def main(folder):
 			pool.quit()
 
 	for f in fileList:
-		engine.get(f, c)
+		subject = dict()
+		subject[dc.identifier] = f
+
+		engine.get(subject, c)
 
 	try:
 		pool.join()

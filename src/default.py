@@ -35,8 +35,6 @@ def main(uri):
 	engine.registerModule(video_item.module)
 	engine.registerModule(audio_item.module)
 
-	subjects = dict()
-
 	def c(error, subject):
 		if error:
 			raise error
@@ -44,7 +42,10 @@ def main(uri):
 		print subject
 		pool.quit()
 
-	s = engine.get(uri, c)
+	subject = dict()
+	subject[dc.identifier] = uri
+
+	engine.get(subject, c)
 
 	try:
 		pool.join()

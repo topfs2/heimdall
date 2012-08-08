@@ -62,14 +62,3 @@ class requiredClass(demand):
 			return True if self.allowExtended else match.NEVER
 		else: # Input class will never reach sought class, diamond problem
 			return match.NEVER
-
-# Subject creation, a task will be scheduled after a subject which fits the given regexp and removed otherwise.
-class subject(demand):
-	def __init__(self, subject):
-		self.subject = subject
-
-		if not isinstance(self.subject, types.StringTypes):
-			raise ValueError("Subject must be string type")
-
-	def matches(self, subject):
-		return True if re.search(self.subject, subject.uri) != None else match.NEVER

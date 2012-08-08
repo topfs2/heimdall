@@ -25,7 +25,7 @@ mime_type_to_class = {
 
 class ItemPredicateObject(tasks.SubjectTask):
 	demand = [
-		demands.subject("^(/|file://)")
+		demands.required(dc.identifier, "^(/|file://)"),
 	]
 
 	supply = [
@@ -35,7 +35,7 @@ class ItemPredicateObject(tasks.SubjectTask):
 	]
 
 	def run(self):
-		path = self.subject.uri
+		path = self.subject[dc.identifier]
 		ext = path[path.rindex("."):].lower()
 		mime_type = mime_types.get(ext, None)
 

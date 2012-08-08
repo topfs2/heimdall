@@ -10,6 +10,7 @@ from urllib import quote_plus, unquote_plus
 
 class ExtractTags(tasks.SubjectTask):
 	demand = [
+		demands.required(dc.identifier),
 		demands.requiredClass("item.audio")
 	]
 
@@ -21,11 +22,11 @@ class ExtractTags(tasks.SubjectTask):
 	]
 
 	def run(self):
-		uri = None
-		if self.subject.uri[0] == "/":
-			uri = self.subject.uri
-		elif self.subject.uri[:7] == "file://":
-			uri = self.subject.uri[7:]
+		uri = self.subject[dc.identifier]
+		if uri[:7] == "file://":
+			uri = uri[7:]
+		elif uri[0] != "/":
+			uri = None
 
 		if uri:
 			f = mutagen.File(uri, easy=True)

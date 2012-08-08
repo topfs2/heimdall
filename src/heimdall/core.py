@@ -53,10 +53,9 @@ def purge_conflicting_tasks(tasks):
 	return [t for t in tasks if t not in conflicting_tasks]
 
 class Subject(object):
-	def __init__(self, uri, subjectTasks, taskQueue, callback):
+	def __init__(self, subjectTasks, taskQueue, callback, Class="", metadata={}):
 		self.condition = threading.Condition()
 
-		self.uri = uri
 		self.Class = ""
 		self.subject = defaultdict(list)
 		self.callback = callback
@@ -67,6 +66,12 @@ class Subject(object):
 		self.taskQueue = taskQueue
 
 		self.task_path = list() # For debugging purposes
+
+		# Before we run any tasks upgrade the subject with given information
+		self.Class = Class
+		for key, value in metadata.items():
+			self.emit(key, value)
+
 		self._scheduleNonConflictingTasks()
 
 	def __getitem__(self, name):
@@ -102,7 +107,6 @@ class Subject(object):
 	def __repr__(self):
 		s = {
 			"Subject": {
-				"id": self.uri,
 				"Class": self.Class,
 				"metadata": self.dump()
 			}
@@ -150,6 +154,6 @@ class Engine(object):
 	def registerModule(self, module):
 		self.registeredTasks.extend([t for t in module if issubclass(t, tasks.SubjectTask)])
 
-	def get(self, uri, callback):
-		subject = Subject(uri, self.registeredTasks, taskqueues.TaskQueue(self.threadPool), callback)
+	def get(self, subject, callback):
+		subject = Subject(self.registeredTasks, taskqueues.TaskQueue(self.threadPool), callback, metadata = subject)
 		return subject
