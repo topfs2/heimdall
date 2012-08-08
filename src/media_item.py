@@ -37,26 +37,33 @@ class ExtractStreamDetails(tasks.SubjectTask):
 			audio_streams = list()
 
 			for track in media_info.tracks:
-#				print json.dumps(track.to_data(), indent=4, sort_keys=True)
-#				print ""
-				if track.track_type == 'Video':
-					v = {
-						"framerate": track.frame_rate,
-						"duration": track.duration,
-						"codec": track.codec,
-						"channels": track.channel_s,
-						"height": track.height,
-						"width": track.width
-					}
+				print json.dumps(track.to_data(), indent=4, sort_keys=True)
+
+				if track.track_type == 'General' and track.duration:
+					self.subject.emit("duration", track.duration / 1000.0)
+				elif track.track_type == 'Video':
+					v = dict()
+
+					if track.frame_rate:
+						v["framerate"] = float(track.frame_rate)
+					if track.codec:
+						v["codec"] = track.codec
+					if track.height:
+						v["height"] = int(track.height)
+					if track.width:
+						v["width"] = int(track.width)
 
 					video_streams.append(v)
 				elif track.track_type == "Audio":
-					a = {
-						"duration": track.duration,
-						"codec": track.codec,
-						"channels": track.channel_s,
-						"sample_rate": track.sampling_rate
-					}
+					a = dict()
+
+					if track.sampling_rate:
+						a["samplerate"] = int(track.sampling_rate)
+					if track.codec:
+						a["codec"] = track.codec
+					if track.channel_s:
+						a["channels"] = int(track.channel_s)
+
 					audio_streams.append(a)
 
 			for v in video_streams:

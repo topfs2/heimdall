@@ -7,7 +7,7 @@ from heimdall.predicates import *
 class GuessVideoOrEpisode(tasks.SubjectTask):
 	demand = [
 		demands.requiredClass("item.video"),
-		demands.required("video_stream")
+		demands.required("duration")
 	]
 
 	supply = [
@@ -16,7 +16,7 @@ class GuessVideoOrEpisode(tasks.SubjectTask):
 	]
 
 	def run(self):
-		duration = self.subject["video_stream"]["duration"]
+		duration = self.subject["duration"]
 
 		if duration > 3600: # if longer than an hour, just guess movie
 			self.subject.extendClass("item.video.Movie")
