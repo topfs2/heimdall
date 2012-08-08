@@ -10,6 +10,7 @@ import json
 
 class ExtractStreamDetails(tasks.SubjectTask):
 	demand = [
+		demands.required(dc.identifier, "^(/|file://)"),
 		demands.requiredClass("item", True)
 	]
 
