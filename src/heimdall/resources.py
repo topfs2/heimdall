@@ -1,5 +1,4 @@
 import tasks
-from utils import SimpleCache
 try:
 	import requests
 	def vfs_read(uri):
@@ -20,15 +19,11 @@ class Resource(tasks.Task):
 		return vfs_read(self.uri)
 
 class SimpleResource(tasks.Task):
-	cache = SimpleCache()
-
 	def __init__(self, uri):
 		self.uri = uri
-		self.data = None
 
 	def require(self):
 		return Resource(self.uri)
 
 	def run(self, resource):
-		factory = lambda : resource.read()
-		return SimpleResource.cache.get(self.uri, factory)
+		return resource.read()
