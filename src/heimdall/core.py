@@ -126,7 +126,7 @@ class SubjectTaskDispatcher(object):
 
 			self.task_path.append(doable_tasks)
 		else:
-			log.debug("Final scheduling order became", self.task_path)
+			log.debug("Final scheduling order became %s", self.task_path)
 			self.callback(None, self.subject)
 
 		self.availableTasks = [t for t in possible_tasks if t not in doable_tasks]
