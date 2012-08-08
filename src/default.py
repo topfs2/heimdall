@@ -18,8 +18,11 @@ import time
 from urlparse import urlparse
 import sys
 
-def main(uri):
+import logging
+logging.basicConfig()
+logging.getLogger("heimdall").setLevel(logging.DEBUG)
 
+def main(uri):
 	if uri == None:
 		uri = "file:///home/SomeUser/movies/Horrible Bosses.mkv" # A file which doesn't exist, just used for testing
 

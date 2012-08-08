@@ -22,6 +22,10 @@ from urllib import quote_plus, unquote_plus
 import sys
 import os
 
+import logging
+logging.basicConfig()
+logging.getLogger("heimdall").setLevel(logging.DEBUG)
+
 def main(folder):
 	print "Running heimdall on folder", folder
 	pool = MainloopThreadPool()
