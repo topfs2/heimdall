@@ -46,6 +46,8 @@ class ArtistPredicateObject(tasks.SubjectTask):
 		self.subject.emit("fanart", artist["strArtistFanart2"])
 		self.subject.emit("fanart", artist["strArtistFanart3"])
 
+		self.subject.extendClass("container.audio.Artist")
+
 class AlbumPredicateObject(tasks.SubjectTask):
 	demand = [
 		demands.required(dc.identifier, tadb_base + "album/")
@@ -64,7 +66,6 @@ class AlbumPredicateObject(tasks.SubjectTask):
 		return resources.SimpleResource("http://www.theaudiodb.com/api/v1/json/{0}/album.php?m={1}".format(api_key, albumID))
 
 	def run(self, resource):
-		print json.dumps(json.loads(resource), indent=4, sort_keys=True)
 		album = json.loads(resource)["album"][0]["album"]
 
 		self.subject.emit(dc.title, album["strAlbum"])
@@ -72,17 +73,21 @@ class AlbumPredicateObject(tasks.SubjectTask):
 		self.subject.emit(foaf.thumbnail, album["strAlbumThumb"])
 		self.subject.emit(dc.date, album["intYearReleased"])
 
+		self.subject.extendClass("container.audio.Album")
+
 class SearchArtist(tasks.SubjectTask):
 	demand = [
-		demands.required(upnp.artist)
+		demands.required(dc.title),
+		demands.requiredClass("container.audio.Artist", True),
+		demands.none(dc.identifier, "http://www.theaudiodb.com/artist")
 	]
 
 	supply = [
-		supplies.emit(upnp.artist, tadb_base + "artist/")
+		supplies.emit(owl.sameAs, tadb_base + "artist/")
 	]
 
 	def require(self):
-		artist = self.subject[upnp.artist].encode("utf-8")
+		artist = self.subject[dc.title].encode("utf-8")
 
 		path = "http://www.theaudiodb.com/api/v1/json/{0}/search.php?s={1}".format(api_key, quote_plus(artist))
 
@@ -97,21 +102,23 @@ class SearchArtist(tasks.SubjectTask):
 		for r in artists:
 			artist = r["artist"]
 			if "idArtist" in artist:
-				self.subject.emit(upnp.artist, "{0}artist/{1}".format(tadb_base, artist["idArtist"]))
+				self.subject.emit(owl.sameAs, "{0}artist/{1}".format(tadb_base, artist["idArtist"]))
 
 class SearchAlbum(tasks.SubjectTask):
 	demand = [
+		demands.required(dc.title),
 		demands.required(upnp.artist),
-		demands.required(upnp.album)
+		demands.requiredClass("container.audio.Album", True),
+		demands.none(dc.identifier, "http://www.theaudiodb.com/album")
 	]
 
 	supply = [
-		supplies.emit(upnp.album, tadb_base + "album/")
+		supplies.emit(owl.sameAs, tadb_base + "album/")
 	]
 
 	def require(self):
 		artist = self.subject[upnp.artist].encode("utf-8")
-		album = self.subject[upnp.album].encode("utf-8")
+		album = self.subject[dc.title].encode("utf-8")
 
 		path = "http://www.theaudiodb.com/api/v1/json/{0}/searchalbum.php?s={1}&a={2}".format(api_key, quote_plus(artist), quote_plus(album))
 
@@ -126,6 +133,6 @@ class SearchAlbum(tasks.SubjectTask):
 		for r in albums:
 			album = r["album"]
 			if "idAlbum" in album:
-				self.subject.emit(upnp.album, "{0}album/{1}".format(tadb_base, album["idAlbum"]))
+				self.subject.emit(owl.sameAs, "{0}album/{1}".format(tadb_base, album["idAlbum"]))
 
 module = [ SearchArtist, SearchAlbum, ArtistPredicateObject, AlbumPredicateObject ]
