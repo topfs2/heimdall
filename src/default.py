@@ -23,44 +23,44 @@ logging.basicConfig()
 logging.getLogger("heimdall").setLevel(logging.DEBUG)
 
 def main(uri):
-	if uri == None:
-		uri = "file:///home/SomeUser/movies/Horrible Bosses.mkv" # A file which doesn't exist, just used for testing
+    if uri == None:
+        uri = "file:///home/SomeUser/movies/Horrible Bosses.mkv" # A file which doesn't exist, just used for testing
 
-	if urlparse(uri).scheme == "":
-		uri = "file://" + uri
+    if urlparse(uri).scheme == "":
+        uri = "file://" + uri
 
-	print "Running heimdall upon", uri
+    print "Running heimdall upon", uri
 
-	pool = MainloopThreadPool()
-	engine = Engine(pool)
-	engine.registerModule(themoviedb.module)
-	engine.registerModule(theaudiodb.module)
-	engine.registerModule(item.module)
-	engine.registerModule(video_item.module)
-	engine.registerModule(audio_item.module)
-	engine.registerModule(media_item.module)
+    pool = MainloopThreadPool()
+    engine = Engine(pool)
+    engine.registerModule(themoviedb.module)
+    engine.registerModule(theaudiodb.module)
+    engine.registerModule(item.module)
+    engine.registerModule(video_item.module)
+    engine.registerModule(audio_item.module)
+    engine.registerModule(media_item.module)
 
-	def c(error, subject):
-		if error:
-			raise error
+    def c(error, subject):
+        if error:
+            raise error
 
-		print subject
-		pool.quit()
+        print subject
+        pool.quit()
 
-	metadata = dict()
-	metadata[dc.identifier] = uri
-	subject = Subject("", metadata)
+    metadata = dict()
+    metadata[dc.identifier] = uri
+    subject = Subject("", metadata)
 
-	print "Running heimdall upon", subject
+    print "Running heimdall upon", subject
 
-	engine.get(subject, c)
+    engine.get(subject, c)
 
-	try:
-		pool.join()
-	except KeyboardInterrupt:
-		pool.quit()
+    try:
+        pool.join()
+    except KeyboardInterrupt:
+        pool.quit()
 
-#	print json.dumps(s.dump(), sort_keys=True, indent=4)
+#    print json.dumps(s.dump(), sort_keys=True, indent=4)
 
 if __name__ == "__main__":
     main(sys.argv[1] if len(sys.argv) >= 2 else None)

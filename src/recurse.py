@@ -27,53 +27,53 @@ logging.basicConfig()
 logging.getLogger("heimdall").setLevel(logging.DEBUG)
 
 def main(folder):
-	print "Running heimdall on folder", folder
-	pool = MainloopThreadPool()
-	engine = Engine(pool)
-	engine.registerModule(themoviedb.module)
-	engine.registerModule(theaudiodb.module)
-	engine.registerModule(item.module)
-	engine.registerModule(video_item.module)
-	engine.registerModule(audio_item.module)
-	engine.registerModule(media_item.module)
+    print "Running heimdall on folder", folder
+    pool = MainloopThreadPool()
+    engine = Engine(pool)
+    engine.registerModule(themoviedb.module)
+    engine.registerModule(theaudiodb.module)
+    engine.registerModule(item.module)
+    engine.registerModule(video_item.module)
+    engine.registerModule(audio_item.module)
+    engine.registerModule(media_item.module)
 
-	subjects = list()
+    subjects = list()
 
-	fileList = []
-	for root, subFolders, files in os.walk(folder):
-		for f in files:
-			p = os.path.join("file://", root, f)
-			fileList.append(p)
+    fileList = []
+    for root, subFolders, files in os.walk(folder):
+        for f in files:
+            p = os.path.join("file://", root, f)
+            fileList.append(p)
 
-	print "Files to process", len(fileList)
+    print "Files to process", len(fileList)
 
-	fileList = fileList[:]
+    fileList = fileList[:]
 
-	nbrBeforeQuit = len(fileList)
+    nbrBeforeQuit = len(fileList)
 
-	def c(error, subject):
-		if error:
-			raise error
+    def c(error, subject):
+        if error:
+            raise error
 
-		print subject
-		subjects.append(subject)
+        print subject
+        subjects.append(subject)
 
-		if len(subjects) >= nbrBeforeQuit:
-			pool.quit()
+        if len(subjects) >= nbrBeforeQuit:
+            pool.quit()
 
-	for uri in fileList:
-		metadata = dict()
-		metadata[dc.identifier] = uri
-		subject = Subject("", metadata)
+    for uri in fileList:
+        metadata = dict()
+        metadata[dc.identifier] = uri
+        subject = Subject("", metadata)
 
-		engine.get(subject, c)
+        engine.get(subject, c)
 
-	try:
-		pool.join()
-	except KeyboardInterrupt:
-		pool.quit()
+    try:
+        pool.join()
+    except KeyboardInterrupt:
+        pool.quit()
 
-	print "done"
+    print "done"
 
 if __name__ == "__main__":
     main(sys.argv[1])

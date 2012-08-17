@@ -9,72 +9,72 @@ from pymediainfo import MediaInfo
 import json
 
 class ExtractStreamDetails(tasks.SubjectTask):
-	demand = [
-		demands.required(dc.identifier, "^(/|file://)"),
-		demands.requiredClass("item", True)
-	]
+    demand = [
+        demands.required(dc.identifier, "^(/|file://)"),
+        demands.requiredClass("item", True)
+    ]
 
-	supply = [
-		supplies.replace(rdf.Class, "item.audio"),
-		supplies.replace(rdf.Class, "item.video"),
-		supplies.emit("video_stream"),
-		supplies.emit("audio_stream")
-	]
+    supply = [
+        supplies.replace(rdf.Class, "item.audio"),
+        supplies.replace(rdf.Class, "item.video"),
+        supplies.emit("video_stream"),
+        supplies.emit("audio_stream")
+    ]
 
-	def run(self):
-		uri = self.subject[dc.identifier]
-		if uri[:7] == "file://":
-			uri = uri[7:]
-		elif uri[0] != "/":
-			uri = None
+    def run(self):
+        uri = self.subject[dc.identifier]
+        if uri[:7] == "file://":
+            uri = uri[7:]
+        elif uri[0] != "/":
+            uri = None
 
-		mime_type = self.subject[dc.format]
+        mime_type = self.subject[dc.format]
 
-		if uri:
-			media_info = MediaInfo.parse(uri)
+        if uri:
+            media_info = MediaInfo.parse(uri)
 
-			video_streams = list()
-			audio_streams = list()
+            video_streams = list()
+            audio_streams = list()
 
-			for track in media_info.tracks:
-				print json.dumps(track.to_data(), indent=4, sort_keys=True)
+            for track in media_info.tracks:
+                print json.dumps(track.to_data(), indent=4, sort_keys=True)
 
-				if track.track_type == 'General' and track.duration:
-					self.subject.emit("duration", track.duration / 1000.0)
-				elif track.track_type == 'Video':
-					v = dict()
+                if track.track_type == 'General' and track.duration:
+                    self.subject.emit("duration", track.duration / 1000.0)
+                elif track.track_type == 'Video':
+                    v = dict()
 
-					if track.frame_rate:
-						v["framerate"] = float(track.frame_rate)
-					if track.codec:
-						v["codec"] = track.codec
-					if track.height:
-						v["height"] = int(track.height)
-					if track.width:
-						v["width"] = int(track.width)
+                    if track.frame_rate:
+                        v["framerate"] = float(track.frame_rate)
+                    if track.codec:
+                        v["codec"] = track.codec
+                    if track.height:
+                        v["height"] = int(track.height)
+                    if track.width:
+                        v["width"] = int(track.width)
 
-					video_streams.append(v)
-				elif track.track_type == "Audio":
-					a = dict()
+                    video_streams.append(v)
+                elif track.track_type == "Audio":
+                    a = dict()
 
-					if track.sampling_rate:
-						a["samplerate"] = int(track.sampling_rate)
-					if track.codec:
-						a["codec"] = track.codec
-					if track.channel_s:
-						a["channels"] = int(track.channel_s)
+                    if track.sampling_rate:
+                        a["samplerate"] = int(track.sampling_rate)
+                    if track.codec:
+                        a["codec"] = track.codec
+                    if track.channel_s:
+                        a["channels"] = int(track.channel_s)
 
-					audio_streams.append(a)
+                    audio_streams.append(a)
 
-			for v in video_streams:
-				self.subject.emit("video_stream", v)
+            for v in video_streams:
+                self.subject.emit("video_stream", v)
 
-			for a in audio_streams:
-				self.subject.emit("audio_stream", a)
+            for a in audio_streams:
+                self.subject.emit("audio_stream", a)
 
-			if len(video_streams) > 0:
-				self.subject.extendClass("item.video")
-			elif len(audio_streams) > 0:
-				self.subject.extendClass("item.audio")
+            if len(video_streams) > 0:
+                self.subject.extendClass("item.video")
+            elif len(audio_streams) > 0:
+                self.subject.extendClass("item.audio")
 
 module = [ ExtractStreamDetails ]

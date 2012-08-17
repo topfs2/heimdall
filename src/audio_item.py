@@ -9,38 +9,38 @@ from urlparse import urlparse
 from urllib import quote_plus, unquote_plus
 
 class ExtractTags(tasks.SubjectTask):
-	demand = [
-		demands.required(dc.identifier),
-		demands.requiredClass("item.audio")
-	]
+    demand = [
+        demands.required(dc.identifier),
+        demands.requiredClass("item.audio")
+    ]
 
-	supply = [
-		supplies.replace(dc.title),
-		supplies.emit(upnp.album),
-		supplies.emit(upnp.artist),
-		supplies.emit(upnp.originalTrackNumber),
-	]
+    supply = [
+        supplies.replace(dc.title),
+        supplies.emit(upnp.album),
+        supplies.emit(upnp.artist),
+        supplies.emit(upnp.originalTrackNumber),
+    ]
 
-	def run(self):
-		uri = self.subject[dc.identifier]
-		if uri[:7] == "file://":
-			uri = uri[7:]
-		elif uri[0] != "/":
-			uri = None
+    def run(self):
+        uri = self.subject[dc.identifier]
+        if uri[:7] == "file://":
+            uri = uri[7:]
+        elif uri[0] != "/":
+            uri = None
 
-		if uri:
-			f = mutagen.File(uri, easy=True)
+        if uri:
+            f = mutagen.File(uri, easy=True)
 
-			for album in f.get("album", []):
-				self.subject.emit(upnp.album, album)
+            for album in f.get("album", []):
+                self.subject.emit(upnp.album, album)
 
-			for artist in f.get("artist", []):
-				self.subject.emit(upnp.artist, artist)
+            for artist in f.get("artist", []):
+                self.subject.emit(upnp.artist, artist)
 
-			title = f.get("title", [])
-			if len(title) > 0:
-				self.subject.replace(dc.title, title[0])
+            title = f.get("title", [])
+            if len(title) > 0:
+                self.subject.replace(dc.title, title[0])
 
-			self.subject.extendClass("item.audio.musicTrack")
+            self.subject.extendClass("item.audio.musicTrack")
 
 module = [ ExtractTags ]

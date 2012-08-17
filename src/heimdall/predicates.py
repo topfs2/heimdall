@@ -1,13 +1,13 @@
 from collections import namedtuple
 
 def PredicateBuilder(short, namespace, properties):
-	predicate = namedtuple(short, properties + [ "xmlns" ])
-	predicate.xmlns = namespace
+    predicate = namedtuple(short, properties + [ "xmlns" ])
+    predicate.xmlns = namespace
 
-	for prop in properties:
-		setattr(predicate, prop, namespace + prop)
+    for prop in properties:
+        setattr(predicate, prop, namespace + prop)
 
-	return predicate
+    return predicate
 
 # Good but needed?
 rdf = PredicateBuilder("rdf", "http://www.w3.org/TR/rdf-schema/", [ "Class" ])

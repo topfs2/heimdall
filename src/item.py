@@ -10,41 +10,41 @@ from urlparse import urlsplit
 import os
 
 mime_types = {
-	".mkv": "video/x-matroska",
-	".avi": "video/avi",
-	".mp3": "audio/mpeg",
-	".flac": "audio/flac"
+    ".mkv": "video/x-matroska",
+    ".avi": "video/avi",
+    ".mp3": "audio/mpeg",
+    ".flac": "audio/flac"
 }
 
 mime_type_to_class = {
-	"video/x-matroska": "item.video",
-	"video/avi": "item.video",
-	"audio/mpeg": "item.audio",
-	"audio/flac": "item.audio"
+    "video/x-matroska": "item.video",
+    "video/avi": "item.video",
+    "audio/mpeg": "item.audio",
+    "audio/flac": "item.audio"
 }
 
 class ItemPredicateObject(tasks.SubjectTask):
-	demand = [
-		demands.required(dc.identifier, "^(/|file://)"),
-	]
+    demand = [
+        demands.required(dc.identifier, "^(/|file://)"),
+    ]
 
-	supply = [
-		supplies.emit(rdf.Class, "item"),
-		supplies.emit(dc.title),
-		supplies.emit(dc.format)
-	]
+    supply = [
+        supplies.emit(rdf.Class, "item"),
+        supplies.emit(dc.title),
+        supplies.emit(dc.format)
+    ]
 
-	def run(self):
-		path = self.subject[dc.identifier]
-		ext = path[path.rindex("."):].lower()
-		mime_type = mime_types.get(ext, None)
+    def run(self):
+        path = self.subject[dc.identifier]
+        ext = path[path.rindex("."):].lower()
+        mime_type = mime_types.get(ext, None)
 
-		title = os.path.basename(path)[ : path.rindex(".") - len(path)]
-		title = title.replace(".", " ")
+        title = os.path.basename(path)[ : path.rindex(".") - len(path)]
+        title = title.replace(".", " ")
 
-		self.subject.emit(dc.title, title)
-		self.subject.emit(dc.format, mime_type)
+        self.subject.emit(dc.title, title)
+        self.subject.emit(dc.format, mime_type)
 
-		self.subject.extendClass(mime_type_to_class.get(mime_type, "item"))
+        self.subject.extendClass(mime_type_to_class.get(mime_type, "item"))
 
 module = [ ItemPredicateObject ]
