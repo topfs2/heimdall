@@ -9,6 +9,10 @@ except:
         return urllib.urlopen(uri).read()
 
 class Resource(tasks.Task):
+    """
+    Raw resource task, when acquired as requirement it may be used to access the
+    resource in its rawest form. Will behave much like a standard file object.
+    """
     def __init__(self, uri):
         self.uri = uri
 
@@ -19,6 +23,12 @@ class Resource(tasks.Task):
         return vfs_read(self.uri)
 
 class SimpleResource(tasks.Task):
+    """
+    Simpler resource access, when acquired as requirement it will give the entire
+    resource as result. This is useful when a resource is needed in its entirety
+    to process. Examples of can be text files such as xml, json etc. The resource
+    is not parsed and its binary form is read.
+    """
     def __init__(self, uri):
         self.uri = uri
 
