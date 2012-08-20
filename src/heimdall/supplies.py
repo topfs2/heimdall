@@ -2,9 +2,16 @@ import types
 import re
 
 class supply(object):
+    """
+    Base class for what a task may supply
+    """
     pass
 
 class predicateObjectSupply(supply):
+    """
+    Base class for supplies which matches against predicates and possibly objects
+    """
+
     def __init__(self, predicate, object = None):
         self.predicate = predicate
         self.object = object
@@ -29,20 +36,33 @@ class predicateObjectSupply(supply):
     def __str__(self):
         return "{0}({1}={2})".format(self.__class__.__name__, self.predicate, str(self.object))
 
-# The task might supply emit predicate(s) (and object) when run
 class emit(predicateObjectSupply):
+    """
+    The task might supply emit predicate(s) (and object) when run
+    """
     pass
 
-# The task might when run replace the predicate (and object(s))
 class replace(predicateObjectSupply):
+    """
+    The task might when run replace the predicate (and object(s))
+    """
+
     def conflict(self, supply):
         return isinstance(supply, emit) and supply.predicate == self.predicate
 
-# Will upgrade the predicate object
 class upgrade(replace):
+    """
+    Will upgrade the predicate object
+    NOT IMPLEMENTED YET.
+    """
     pass
 
 class ugpradeClass(supply):
+    """
+    Will upgrade the class of a subject
+    NOT IMPLEMENTED YET.
+    """
+
     def __init__(self, Class):
         self.Class = Class
 
