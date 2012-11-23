@@ -33,8 +33,6 @@ class ExtractStreamDetails(tasks.SubjectTask):
             audio_streams = list()
 
             for track in media_info.tracks:
-                print json.dumps(track.to_data(), indent=4, sort_keys=True)
-
                 if track.track_type == 'General' and track.duration:
                     self.subject.emit("duration", track.duration / 1000.0)
                 elif track.track_type == 'Video':
