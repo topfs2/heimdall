@@ -15,7 +15,7 @@ import json
 import debug
 
 import time
-from urlparse import urlparse
+import urlparse
 import sys
 
 import logging
@@ -26,8 +26,8 @@ def main(uri):
     if uri == None:
         uri = "file:///home/SomeUser/movies/Horrible Bosses.mkv" # A file which doesn't exist, just used for testing
 
-    if urlparse(uri).scheme == "":
-        uri = "file://" + uri
+    if urlparse.urlparse(uri).scheme == "":
+        uri = urlparse.urlunparse(("file", "", uri, "", "", ""))
 
     print "Running heimdall upon", uri
 

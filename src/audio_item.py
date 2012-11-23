@@ -22,11 +22,7 @@ class ExtractTags(tasks.SubjectTask):
     ]
 
     def run(self):
-        uri = self.subject[dc.identifier]
-        if uri[:7] == "file://":
-            uri = uri[7:]
-        elif uri[0] != "/":
-            uri = None
+        uri = urlparse(self.subject[dc.identifier]).path
 
         if uri:
             f = mutagen.File(uri, easy=True)

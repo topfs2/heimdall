@@ -7,10 +7,11 @@ from heimdall.predicates import *
 from pymediainfo import MediaInfo
 
 import json
+from urlparse import urlparse
 
 class ExtractStreamDetails(tasks.SubjectTask):
     demand = [
-        demands.required(dc.identifier, "^(/|file://)"),
+        demands.required(dc.identifier, "^file://"),
         demands.requiredClass("item", True)
     ]
 
@@ -22,12 +23,7 @@ class ExtractStreamDetails(tasks.SubjectTask):
     ]
 
     def run(self):
-        uri = self.subject[dc.identifier]
-        if uri[:7] == "file://":
-            uri = uri[7:]
-        elif uri[0] != "/":
-            uri = None
-
+        uri = urlparse(self.subject[dc.identifier]).path
         mime_type = self.subject[dc.format]
 
         if uri:
