@@ -87,9 +87,9 @@ class SearchArtist(tasks.SubjectTask):
     ]
 
     def require(self):
-        artist = self.subject[dc.title].encode("utf-8")
+        title = self.subject[dc.title].encode("utf-8")
 
-        path = "http://www.theaudiodb.com/api/v1/json/{0}/search.php?s={1}".format(api_key, quote_plus(artist))
+        path = "http://www.theaudiodb.com/api/v1/json/{0}/search.php?s={1}".format(api_key, quote_plus(title))
 
         return resources.SimpleResource(path)
 
