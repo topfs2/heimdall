@@ -116,7 +116,7 @@ class TaskQueue(object):
             taskData = self.taskDataMap[owner]
 
             if error:
-                self.callback(taskData.task, error, None)
+                taskData.callback(taskData.task, error, None)
             else:
                 i = taskData.requirementsMap[r]
                 taskData.requirements[i] = result
