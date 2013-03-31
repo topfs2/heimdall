@@ -137,6 +137,7 @@ class ResolvePlatform(tasks.SubjectTask):
             "sgb":    "Super Game Boy",    # Super Gameboy image file
             "smc":    "Super Nintendo",    # Super Nintendo game-console ROM image
             "smd":    "Sega Genesis",      # Sega Genesis ROM emulator file
+            "sms":    "Sega Master System",# Sega Master System ROM emulator file
             "st":     "Atari ST",          # Atari disk image file
             "swc":    "Super Nintendo",    # Snes9x-Next emulator ROM image
             "trd":    "ZX Spectrum",       # TR-DOS ZX Spectrum floppy disk image
