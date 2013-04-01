@@ -25,6 +25,9 @@ class Resource(tasks.Task):
     def read(self):
         return vfs_read(self.uri, self.mime)
 
+    def __repr__(self):
+        return "heimdall.resources.Resource(\"%s\")" % self.uri
+
 class SimpleResource(tasks.Task):
     """
     Simpler resource access, when acquired as requirement it will give the entire
