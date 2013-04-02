@@ -4,10 +4,7 @@ from heimdall import resources
 from heimdall import supplies, demands
 from heimdall.predicates import *
 
-import json
-from urllib import unquote_plus, quote_plus
-from urlparse import urlsplit
-import os
+import urlparse
 
 mime_types = {
     ".mkv": "video/x-matroska",
@@ -25,7 +22,7 @@ mime_type_to_class = {
 
 class ItemPredicateObject(tasks.SubjectTask):
     demand = [
-        demands.required(dc.identifier, "^(/|file://)"),
+        demands.required(dc.identifier),
     ]
 
     supply = [
@@ -35,11 +32,16 @@ class ItemPredicateObject(tasks.SubjectTask):
     ]
 
     def run(self):
-        path = self.subject[dc.identifier]
+        path = urlparse.urlparse(self.subject[dc.identifier]).path
         ext = path[path.rindex("."):].lower()
         mime_type = mime_types.get(ext, None)
 
-        title = os.path.basename(path)[ : path.rindex(".") - len(path)]
+        title = path
+        if "." in title:
+            title = title[ : title.rindex(".") - len(title)]
+        for slash in ["/", "\\"]:
+            if slash in title:
+                title = title[title.rindex(slash) + 1:]
         title = title.replace(".", " ")
 
         self.subject.emit(dc.title, title)

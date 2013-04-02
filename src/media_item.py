@@ -6,7 +6,6 @@ from heimdall.predicates import *
 
 from pymediainfo import MediaInfo
 
-import json
 from urlparse import urlparse
 
 class ExtractStreamDetails(tasks.SubjectTask):
@@ -24,7 +23,6 @@ class ExtractStreamDetails(tasks.SubjectTask):
 
     def run(self):
         uri = urlparse(self.subject[dc.identifier]).path
-        mime_type = self.subject[dc.format]
 
         if uri:
             media_info = MediaInfo.parse(uri)

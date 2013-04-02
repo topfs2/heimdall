@@ -78,8 +78,10 @@ class Subject(object):
 			self.metadata[predicate].append(object)
 
 	def replace(self, predicate, object):
-		del self.metadata[predicate]
-		self.metadata[predicate].append(object)
+		if predicate in self.metadata:
+			del self.metadata[predicate]
+		if object:
+			self.metadata[predicate].append(object)
 
 
 	def extendClass(self, Class):
