@@ -29,8 +29,8 @@ class MoviePredicateObject(tasks.SubjectTask):
         ID = uri[len(tmdb_base + "movie/"):]
 
         return [
-            resources.SimpleResource(tmdb_api_base + "/configuration?api_key=57983e31fb435df4df77afb854740ea9"),
-            resources.SimpleResource(tmdb_api_base + "movie/" + ID + "?api_key=57983e31fb435df4df77afb854740ea9")
+            resources.SimpleResource(tmdb_api_base + "/configuration?api_key=57983e31fb435df4df77afb854740ea9", "application/json"),
+            resources.SimpleResource(tmdb_api_base + "movie/" + ID + "?api_key=57983e31fb435df4df77afb854740ea9", "application/json")
         ]
 
     def run(self, configuration, resource):
@@ -67,7 +67,7 @@ class SearchMovieCollector(tasks.SubjectTask):
         title = self.subject[dc.title]
         path = "http://api.themoviedb.org/3/search/movie?api_key=57983e31fb435df4df77afb854740ea9&query=" + quote_plus(title)
 
-        return resources.SimpleResource(path)
+        return resources.SimpleResource(path, "application/json")
 
     def run(self, resource):
         result = json.loads(resource)
