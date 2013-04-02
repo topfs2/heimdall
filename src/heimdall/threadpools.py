@@ -1,6 +1,5 @@
 from collections import deque
 from collections import namedtuple
-import json
 import threading
 import logging
 
@@ -20,7 +19,7 @@ def safe_execute(wi):
         result = wi.runnable(*wi.args, **wi.kwargs)
     except Exception as e:
         error = e
-        log.exception("Failure on run of %s with args %s and kwargs %s", str(wi.runnable), json.dumps(wi.args), json.dumps(wi.kwargs))
+        log.exception("Failure on run of %s with args %s and kwargs %s", wi.runnable, wi.args, wi.kwargs)
     finally:
         wi.callback(wi.runnable, error, result)
 
