@@ -13,7 +13,7 @@ def PredicateBuilder(short, namespace, properties):
 rdf = PredicateBuilder("rdf", "http://www.w3.org/TR/rdf-schema/", [ "Class" ])
 
 # Certain
-dc = PredicateBuilder("dc", "http://purl.org/dc/elements/1.1/", [ "title", "creator", "description", "format", "identifier", "date" ])
+dc = PredicateBuilder("dc", "http://purl.org/dc/elements/1.1/", [ "title", "creator", "description", "type", "format", "identifier", "date" ])
 owl = PredicateBuilder("owl", "http://www.w3.org/2002/07/owl#", [ "sameAs", "differentFrom" ])
 foaf = PredicateBuilder("foaf", "http://xmlns.com/foaf/spec/", [ "Agent", "Group", "Organization", "Person", "Document", "Image", "thumbnail", "homepage" ])
 
