@@ -22,7 +22,7 @@ mime_type_to_class = {
 
 class ItemPredicateObject(tasks.SubjectTask):
     demand = [
-        demands.required(dc.identifier),
+        demands.required(dc.identifier, "\.\w+$"),
     ]
 
     supply = [
