@@ -15,7 +15,7 @@ class MoviePredicateObject(tasks.SubjectTask):
     ]
 
     supply = [
-        supplies.replace(dc.title),
+        supplies.emit(dc.title),
         supplies.emit(dc.description),
         supplies.emit(dc.date),
         supplies.emit(dc.type),
