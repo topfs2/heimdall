@@ -21,5 +21,10 @@ foaf = PredicateBuilder("foaf", "http://xmlns.com/foaf/spec/", [ "Agent", "Group
 media = PredicateBuilder("media", "http://purl.org/media#", [ "duration", "rating" ])
 video = PredicateBuilder("video", "http://purl.org/video#", [ ])
 audio = PredicateBuilder("audio", "http://purl.org/audio#", [ ])
+# SWO_0000396: software developer organization
+# SWO_0000397: software publisher organization
+swo = PredicateBuilder("swo", "http://www.ebi.ac.uk/efo/swo", [ "SWO_0000396", "SWO_0000397" ])
+# data_3106: System metadata <http://bioportal.bioontology.org/ontologies/49579/?p=terms&conceptid=data_3106>
+edamontology = PredicateBuilder("edamontology", "http://edamontology.org/", [ "data_3106" ])
 
 upnp = PredicateBuilder("upnp", "urn:schemas-upnp-org:metadata-1-0/upnp/", [ "artist", "album", "originalTrackNumber" ])
